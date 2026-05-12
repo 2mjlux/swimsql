@@ -1,0 +1,3 @@
+tabulate
+openpyxl
+odfpy
