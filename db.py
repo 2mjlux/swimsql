@@ -37,5 +37,44 @@ def init_db():
 
             CREATE TABLE IF NOT EXISTS countries(
                 id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                code TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS disciplines(
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                stroke TEXT NOT NULL,
+                distance INTEGER NOT NULL,
+                pool_id INTEGER NOT NULL,
+                is_relay INTEGER NOT NULL DEFAULT 0,
+                CONSTRAINT fk_pools
+                    FOREIGN KEY(pool_id)
+                    REFERENCES pools(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS meets(
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                date_start TEXT NOT NULL,   -- stored as YYYY-MM-DD
+                date_end TEXT,   -- optional
+                location TEXT,   -- optional
+                country_id INTEGER NOT NULL,
+                notes TEXT,  -- optional
+                CONSTRAINT fk_meets_countries
+                    FOREIGN KEY(country_id)
+                    REFERENCES countries(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS clubs(
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                country_id INTEGER NOT NULL,
+                CONSTRAINT fk_clubs_countries
+                    FOREIGN KEY(country_id)
+                    REFERENCES countries(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS swimmers(
 
         """)
