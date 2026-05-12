@@ -30,8 +30,8 @@ SwimSQL uses a local SQLite database with the following structure:
 | `swimmers` | Swimmers, linked to a club and a nationality |
 | `pools` | Pool types (length and unit: metres or yards) |
 | `disciplines` | Events (stroke, distance, pool type), pre-seeded at first run |
-| `meets` | Competitions (name, date, location, country) |
-| `performances` | Results linking a swimmer, discipline, meet and time (performance) |
+| `meets` | Competitions (name, start and end date, location, country) |
+| `performances` | Results linking a swimmer, discipline, meet, date, session and time |
 
 ### Relationships
 
