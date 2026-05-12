@@ -49,6 +49,7 @@ countries <-- clubs <-- swimmers --> countries
 - [tabulate](https://pypi.org/project/tabulate/) — terminal table formatting
 - [openpyxl](https://pypi.org/project/openpyxl/) — XLSX export
 - [odfpy](https://pypi.org/project/odfpy/) — ODS export
+- [pycountry](https://pypi.org/project/pycountry/) — ISO country codes
 
 All other dependencies (SQLite, etc.) are included in Python's standard library.
 

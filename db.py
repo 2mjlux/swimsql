@@ -1,4 +1,5 @@
 import sqlite3
+import pycountry
 from pathlib import Path
 
 DB_PATH = Path.home() / ".swimsql" / "swimsql.db"
@@ -19,3 +20,22 @@ def get_connection():
     # PRAGMA sets SQLite configuration (SQLite-level)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+def init_db():
+    """
+    Create all tables if they do not exist.
+    Seed reference data on first run.
+    """
+    with get_connection() as conn:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS pools(
+                id INTEGER PRIMARY KEY,
+                length INTEGER NOT NULL,
+                unit TEXT NOT NULL,
+                name TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS countries(
+                id INTEGER PRIMARY KEY,
+
+        """)
