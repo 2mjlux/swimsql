@@ -90,7 +90,7 @@ You will be presented with a menu:
 
 SwimSQL stores its database at:
 
-`~/.swimsql/swimsql.db`
+```~/.swimsql/swimsql.db```
 
 This folder is created automatically on first run. To back up your data,
 copy this file to a safe location. To migrate to a new machine, copy it
