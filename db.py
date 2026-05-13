@@ -48,7 +48,7 @@ def init_db():
                 distance INTEGER NOT NULL,
                 pool_id INTEGER NOT NULL,
                 is_relay INTEGER NOT NULL DEFAULT 0,
-                CONSTRAINT fk_pools
+                CONSTRAINT fk_disciplines_pools
                     FOREIGN KEY(pool_id)
                     REFERENCES pools(id)
             );
@@ -129,3 +129,15 @@ def _seed_pools(conn):
         (25, "yards", "Short Course 25 Yards"),
         ]
     )
+
+def _seed_countries(conn):
+    """
+    Seed the countries table with the ISO alpha-3 list.
+    """
+    if conn.execute("SELECT COUNT(*) FROM countries").fetchone()[0] > 0:
+        return  # already seeded
+    conn.executemany(
+        "INSERT INTO countries (name, code) VALUES (?, ?)",
+        [(c.name, c.alpha_3) for c in pycountry.countries]
+    )
+
