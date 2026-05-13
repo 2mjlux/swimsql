@@ -16,8 +16,8 @@ a local database on your machine.
 - Export results to XLSX or ODS for sharing
 
 Disciplines are pre-loaded at first run and cover all standard individual
-events (Freestyle, Backstroke, Breaststroke, Butterfly, Individual Medley)
-in both 25m and 50m pools, plus relay events.
+events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley)
+in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
 
 ## Database schema
 
@@ -29,22 +29,36 @@ SwimSQL uses a local SQLite database with the following structure:
 | `clubs` | Swimming clubs, linked to a country |
 | `swimmers` | Swimmers, linked to a club and a nationality |
 | `pools` | Pool types (length and unit: metres or yards) |
-| `disciplines` | Events (stroke, distance, pool type), pre-seeded at first run |
+| `disciplines_metres` | Metre-based events (stroke, distance, pool), pre-seeded at first run |
+| `disciplines_yards` | Yard-based events (stroke, distance), pre-seeded at first run |
 | `meets` | Competitions (name, start and end date, location, country) |
-| `performances` | Results linking a swimmer, discipline, meet, date, session and time |
+| `performances_metres` | Metre-based results linking swimmer, discipline, meet, date, session and time |
+| `performances_yards` | Yard-based results linking swimmer, discipline, meet, date, session and time |
 
-Times are stored as integers in **centiseconds** (hundredths of a second).
-A time of 1:23.45 is stored as 8345.
+### Notes
 
-### Relationships
+- Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
+- Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
+
+### Relationships (diagram)
 
 ```
-countries <-- clubs <-- swimmers --> countries
-                             |
-                        performances --> meets --> countries
-                             |
-                        disciplines --> pools
+pools <-- disciplines_metres <-- performances_metres --> meets --> countries
+          disciplines_yards  <-- performances_yards  --> meets --> countries
+                                        |
+                      countries <-- swimmers --> clubs --> countries
 ```
+
+### Relationships (prose)
+
+- `clubs` belong to a `country`
+- `swimmers` belong to a `club` and have a `country` (nationality)
+- `disciplines_metres` reference a `pool`
+- `disciplines_yards` reference no pool (25y is the only yards pool)
+- `performances_metres` link a `swimmer`, `discipline_metres`, and `meet`
+- `performances_yards` link a `swimmer`, `discipline_yards`, and `meet`
+- `meets` take place in a `country`
+
 
 ## Requirements
 
