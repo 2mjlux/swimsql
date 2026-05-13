@@ -33,6 +33,9 @@ SwimSQL uses a local SQLite database with the following structure:
 | `meets` | Competitions (name, start and end date, location, country) |
 | `performances` | Results linking a swimmer, discipline, meet, date, session and time |
 
+Times are stored as integers in **centiseconds** (hundredths of a second).
+A time of 1:23.45 is stored as 8345.
+
 ### Relationships
 
 ```
