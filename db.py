@@ -110,3 +110,22 @@ def init_db():
                     REFERENCES disciplines(id)
              );
         """)
+        _seed_pools(conn)
+        _seed_countries(conn)
+        _seed_disciplines(conn)
+
+def _seed_pools(conn):
+    """
+    Seed the pools table with standard competitive pool sizes on first run.
+    """
+    if conn.execute("SELECT COUNT(*) FROM pools").fetchone()[0] > 0:
+        return  # already seeded
+    conn.executemany(
+        "INSERT INTO pools (length, unit, name) VALUES (?, ?, ?)",
+        [
+        (25, "metres", "Short Course 25 Metres"),
+        (50, "metres", "Long Course 50 Metres"),
+        (33, "metres", "Mid Course 33 Metres"),
+        (25, "yards", "Short Course 25 Yards"),
+        ]
+    )
