@@ -43,8 +43,8 @@ def init_db():
 
             CREATE TABLE IF NOT EXISTS disciplines(
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                stroke TEXT NOT NULL,
+                name TEXT NOT NULL, -- prebuilt display label "100m Freestyle (25m)"
+                stroke TEXT NOT NULL,   -- used for filtering and querying
                 distance INTEGER NOT NULL,
                 pool_id INTEGER NOT NULL,
                 is_relay INTEGER NOT NULL DEFAULT 0,
@@ -76,5 +76,37 @@ def init_db():
             );
 
             CREATE TABLE IF NOT EXISTS swimmers(
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                date_of_birth TEXT NOT NULL, -- stored as YYYY-MM-DD
+                gender TEXT NOT NULL,    -- M or F
+                club_id INTEGER NOT NULL,
+                country_id INTEGER NOT NULL,
+                CONSTRAINT fk_swimmers_clubs
+                    FOREIGN KEY(club_id)
+                    REFERENCES clubs(id),
+                CONSTRAINT fk_swimmers_countries
+                    FOREIGN KEY(country_id)
+                    REFERENCES countries(id)
+            );
 
+            CREATE TABLE IF NOT EXISTS performances(
+                id INTEGER PRIMARY KEY,
+                swimmer_id INTEGER NOT NULL,
+                meet_id INTEGER NOT NULL,
+                discipline_id INTEGER NOT NULL,
+                time_cs INTEGER NOT NULL,    -- stored in centiseconds
+                date TEXT NOT NULL, -- stored as YYYY-MM-DD
+                session TEXT,   -- AM or PM, optional
+                notes TEXT,  -- optional
+                CONSTRAINT fk_performances_swimmers
+                    FOREIGN KEY(swimmer_id)
+                    REFERENCES swimmers(id),
+                CONSTRAINT fk_performances_meets
+                    FOREIGN KEY(meet_id)
+                    REFERENCES meets(id),
+                CONSTRAINT fk_performances_disciplines
+                    FOREIGN KEY(discipline_id)
+                    REFERENCES disciplines(id)
+             );
         """)
