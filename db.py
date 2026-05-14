@@ -41,16 +41,24 @@ def init_db():
                 code TEXT NOT NULL
             );
 
-            CREATE TABLE IF NOT EXISTS disciplines(
+            CREATE TABLE IF NOT EXISTS disciplines_metres(
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL, -- prebuilt display label "100m Freestyle (25m)"
                 stroke TEXT NOT NULL,   -- used for filtering and querying
                 distance INTEGER NOT NULL,
                 pool_id INTEGER NOT NULL,
                 is_relay INTEGER NOT NULL DEFAULT 0,
-                CONSTRAINT fk_disciplines_pools
+                CONSTRAINT fk_disciplines_metres_pools
                     FOREIGN KEY(pool_id)
                     REFERENCES pools(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS disciplines_yards(
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL, -- prebuilt display label "100y Freestyle"
+                stroke TEXT NOT NULL,   -- used for filtering and querying
+                distance INTEGER NOT NULL,
+                is_relay INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS meets(
@@ -90,29 +98,85 @@ def init_db():
                     REFERENCES countries(id)
             );
 
-            CREATE TABLE IF NOT EXISTS performances(
+            CREATE TABLE IF NOT EXISTS performances_metres(
                 id INTEGER PRIMARY KEY,
                 swimmer_id INTEGER NOT NULL,
                 meet_id INTEGER NOT NULL,
-                discipline_id INTEGER NOT NULL,
+                discipline_metres_id INTEGER NOT NULL,
                 time_cs INTEGER NOT NULL,    -- stored in centiseconds
                 date TEXT NOT NULL, -- stored as YYYY-MM-DD
                 session TEXT,   -- AM or PM, optional
                 notes TEXT,  -- optional
-                CONSTRAINT fk_performances_swimmers
+                CONSTRAINT fk_performances_metres_swimmers
                     FOREIGN KEY(swimmer_id)
                     REFERENCES swimmers(id),
-                CONSTRAINT fk_performances_meets
+                CONSTRAINT fk_performances_metres_meets
                     FOREIGN KEY(meet_id)
                     REFERENCES meets(id),
-                CONSTRAINT fk_performances_disciplines
-                    FOREIGN KEY(discipline_id)
-                    REFERENCES disciplines(id)
+                CONSTRAINT fk_performances_metres_disciplines_metres
+                    FOREIGN KEY(discipline_metres_id)
+                    REFERENCES disciplines_metres(id)
              );
+
+             CREATE TABLE IF NOT EXISTS performances_yards(
+                id INTEGER PRIMARY KEY,
+                swimmer_id INTEGER NOT NULL,
+                meet_id INTEGER NOT NULL,
+                discipline_yards_id INTEGER NOT NULL,
+                time_cs INTEGER NOT NULL,    -- stored in centiseconds
+                date TEXT NOT NULL, -- stored as YYYY-MM-DD
+                session TEXT,   -- AM or PM, optional
+                notes TEXT,  -- optional
+                CONSTRAINT fk_performances_yards_swimmers
+                    FOREIGN KEY(swimmer_id)
+                    REFERENCES swimmers(id),
+                CONSTRAINT fk_performances_yards_meets
+                    FOREIGN KEY(meet_id)
+                    REFERENCES meets(id),
+                CONSTRAINT fk_performances_yards_disciplines_yards
+                    FOREIGN KEY(discipline_yards_id)
+                    REFERENCES disciplines_yards(id)
+             );
+
+             CREATE TABLE IF NOT EXISTS relay_legs_metres(
+                id INTEGER PRIMARY KEY,
+                performance_metres_id INTEGER NOT NULL, -- time of team
+                swimmer_id INTEGER NOT NULL,
+                leg_number INTEGER NOT NULL,
+                stroke TEXT NOT NULL,
+                time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
+                start_type TEXT NOT NULL,   -- 'standing' or 'flying'
+                is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
+                CONSTRAINT fk_relay_legs_metres_performances_metres
+                    FOREIGN KEY(performance_metres_id)
+                    REFERENCES performances_metres(id),
+                CONSTRAINT fk_relay_legs_metres_swimmer
+                    FOREIGN KEY(swimmer_id)
+                    REFERENCES swimmers(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS relay_legs_yards(
+                id INTEGER PRIMARY KEY,
+                performance_yards_id INTEGER NOT NULL, -- time of team
+                swimmer_id INTEGER NOT NULL,
+                leg_number INTEGER NOT NULL,
+                stroke TEXT NOT NULL,
+                time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
+                start_type TEXT NOT NULL,   -- 'standing' or 'flying'
+                is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
+                CONSTRAINT fk_relay_legs_yards_performances_yards
+                    FOREIGN KEY(performance_yards_id)
+                    REFERENCES performances_yards(id),
+                CONSTRAINT fk_relay_legs_yards_swimmer
+                    FOREIGN KEY(swimmer_id)
+                    REFERENCES swimmers(id)
+            );
+
         """)
         _seed_pools(conn)
         _seed_countries(conn)
-        _seed_disciplines(conn)
+        _seed_disciplines_metres(conn)
+        _seed_disciplines_yards(conn)
 
 def _seed_pools(conn):
     """
@@ -141,3 +205,68 @@ def _seed_countries(conn):
         [(c.name, c.alpha_3) for c in pycountry.countries]
     )
 
+def _seed_disciplines_metres(conn):
+    """
+    Seed the disciplines (meters) table with olympic and non-olympic events.
+    """
+    if conn.execute("SELECT COUNT(*) FROM disciplines_metres").fetchone()[0] > 0:
+        return  # already seeded
+
+    # Build a pool name -> id lookup dictionary to avoid repeated SQL queries
+    pools = {
+            row["name"]: row["id"] for row in conn.execute("SELECT id, name FROM pools")
+            }
+
+    individual = [
+        ("Freestyle",    [25, 50, 100, 200, 400, 800, 1500]),
+        ("Backstroke",   [25, 50, 100, 200]),
+        ("Breaststroke", [25, 50, 100, 200]),
+        ("Butterfly",    [25, 50, 100, 200]),
+        ("Medley",       [100, 200, 400]),
+    ]
+
+    disciplines = []
+    for stroke, distances in individual:
+        for distance in distances:
+            # determine which pools apply
+            if distance == 25:
+                applicable_pools = ["Short Course 25 Metres"]
+            elif distance == 50:
+                applicable_pools = ["Short Course 25 Metres", "Long Course 50 Metres"]
+            elif stroke == "Medley" and distance == 100:
+                applicable_pools = ["Short Course 25 Metres"]
+            else:
+                applicable_pools = ["Short Course 25 Metres", "Long Course 50 Metres",
+                                    "Mid Course 33 Metres"
+                                   ]
+
+            for pool_name in applicable_pools:
+                pool_id = pools[pool_name]
+                name = f"{distance}m {stroke} ({pool_name})"
+                disciplines.append((name, stroke, distance, pool_id, 0))
+
+    # Relay events are hard-coded rather than generated programmatically
+    relays = [
+        ("4x25m Freestyle Relay",  "Freestyle", 100, pools["Short Course 25 Metres"], 1),
+        ("4x50m Freestyle Relay",  "Freestyle", 200, pools["Short Course 25 Metres"], 1),
+        ("4x100m Freestyle Relay", "Freestyle", 400, pools["Short Course 25 Metres"], 1),
+        ("4x200m Freestyle Relay", "Freestyle", 800, pools["Short Course 25 Metres"], 1),
+        ("4x50m Medley Relay",     "Medley",    200, pools["Short Course 25 Metres"], 1),
+        ("4x100m Medley Relay",    "Medley",    400, pools["Short Course 25 Metres"], 1),
+        ("4x50m Freestyle Relay",  "Freestyle", 200, pools["Long Course 50 Metres"], 1),
+        ("4x100m Freestyle Relay", "Freestyle", 400, pools["Long Course 50 Metres"], 1),
+        ("4x200m Freestyle Relay", "Freestyle", 800, pools["Long Course 50 Metres"], 1),
+        ("4x50m Medley Relay",     "Medley",    200, pools["Long Course 50 Metres"], 1),
+        ("4x100m Medley Relay",    "Medley",    400, pools["Long Course 50 Metres"], 1),
+        ("4x100m Freestyle Relay", "Freestyle", 400, pools["Mid Course 33 Metres"], 1),
+        ("4x200m Freestyle Relay", "Freestyle", 800, pools["Mid Course 33 Metres"], 1),
+        ("4x100m Medley Relay",    "Medley",    400, pools["Mid Course 33 Metres"], 1),
+    ]
+
+    disciplines.extend(relays)
+
+    conn.executemany(
+        """INSERT INTO disciplines_metres (name, stroke, distance, pool_id, is_relay)
+        VALUES (?, ?, ?, ?, ?)""",
+        [(d.name, d.stroke, d.distance, d.pool_id, d.is_relay) for d in disciplines_metres]
+    )
