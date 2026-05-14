@@ -3,6 +3,7 @@
 A command-line tool for tracking swimming competition performances,
 built with Python and SQLite.
 
+
 ## What it does
 
 SwimSQL lets you record and consult a swimmer's competition results
@@ -19,6 +20,7 @@ Disciplines are pre-loaded at first run and cover all standard individual
 events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley)
 in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
 
+
 ## Database schema
 
 SwimSQL uses a local SQLite database with the following structure:
@@ -34,11 +36,14 @@ SwimSQL uses a local SQLite database with the following structure:
 | `meets` | Competitions (name, start and end date, location, country) |
 | `performances_metres` | Metre-based results linking swimmer, discipline, meet, date, session and time |
 | `performances_yards` | Yard-based results linking swimmer, discipline, meet, date, session and time |
+| `relay_legs_metres` | Individual leg times within a metre-based relay |
+| `relay_legs_yards` | Individual leg times within a yard-based relay |
 
 ### Notes
 
 - Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
 - Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
+- Relay leg times record `start_type` (standing or flying) and `is_mixed_mf` to determine whether a split time is eligible for individual records.
 
 ### Relationships (diagram)
 
@@ -47,6 +52,10 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
           disciplines_yards  <-- performances_yards  --> meets --> countries
                                         |
                       countries <-- swimmers --> clubs --> countries
+                                        |
+                             +----------+----------+
+                             |                     |
+                    relay_legs_metres       relay_legs_yards
 ```
 
 ### Relationships (prose)
@@ -58,6 +67,17 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 - `performances_metres` link a `swimmer`, `discipline_metres`, and `meet`
 - `performances_yards` link a `swimmer`, `discipline_yards`, and `meet`
 - `meets` take place in a `country`
+- `relay_legs_metres` link individual leg times to a `performances_metres` team result and a `swimmer`
+- `relay_legs_yards` link individual leg times to a `performances_yards` team result and a `swimmer`
+
+### Additional detail relay leg fields
+
+Each relay leg records:
+- `leg_number`  -- position in the relay (1, 2, 3 or 4)
+- `stroke`      -- stroke swum (especially important for medley relays)
+- `time_cs`     -- individual leg time in centiseconds
+- `start_type`  -- 'standing' (leg 1) or 'flying' (legs 2, 3, 4)
+- `is_mixed_mf` -- 1 if mixed gender relay (split times cannot count for records)
 
 
 ## Requirements
@@ -69,6 +89,7 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 - [pycountry](https://pypi.org/project/pycountry/) — ISO country codes
 
 All other dependencies (SQLite, etc.) are included in Python's standard library.
+
 
 ## Installation
 
