@@ -340,3 +340,25 @@ def time_to_cs(time_str):
             "(e.g. 28.74 for 28 seconds and 74 hundredths of a second "
             "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)"
         )
+
+def add_meet(name, date_start, country_id, date_end=None, location=None, notes=None):
+    """
+    Add a meet to the meets table.
+    """
+    meet = (name, date_start, country_id, date_end, location, notes)
+    with get_connection() as conn:
+        cursor = conn.execute(
+        """INSERT INTO meets (name, date_start, country_id, date_end, location,
+        notes) VALUES (?, ?, ?, ?, ?, ?)""", meet
+        )
+        return cursor.lastrowid
+
+def list_meets():
+    """
+    List all meets ordered by date_start descending (most recent first).
+    """
+    with get_connection() as conn:
+        listing = conn.execute(
+        """SELECT * FROM meets ORDER BY date_start DESC"""
+        ).fetchall()
+        return listing
