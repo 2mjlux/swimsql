@@ -309,7 +309,7 @@ def _seed_disciplines_yards(conn):
         VALUES (?, ?, ?, ?)""", disciplines
     )
 
-# helper functions
+# helper function
 def cs_to_time(cs):
     """
     Convert the performance time from centiseconds to minutes:seconds.hundredths of a
@@ -321,6 +321,7 @@ def cs_to_time(cs):
         return f"{minutes}:{seconds:02d}.{hundredths:02d}"
     return f"{seconds:02d}.{hundredths:02d}"
 
+# helper function
 def time_to_cs(time_str):
     """
     Convert time from MM:SS.cc format to centiseconds.
@@ -360,5 +361,32 @@ def list_meets():
     with get_connection() as conn:
         listing = conn.execute(
         """SELECT * FROM meets ORDER BY date_start DESC"""
+        ).fetchall()
+        return listing
+
+def add_swimmer(name, date_of_birth, gender, club_id, country_id):
+    """
+    Add a swimmer to the swimmers table.
+    """
+    swimmer = (name, date_of_birth, gender, club_id, country_id)
+    with get_connection() as conn:
+        cursor = conn.execute(
+        """INSERT INTO swimmers (name, date_of_birth, gender, club_id, country_id)
+        VALUES (?, ?, ?, ?, ?)""", swimmer
+        )
+        return cursor.lastrowid
+
+def list_swimmers():
+    """
+    List all swimmers ordered by name.
+    """
+    with get_connection() as conn:
+        listing = conn.execute(
+        """SELECT swimmers.id, swimmers.name, swimmers.date_of_birth, swimmers.gender,
+        clubs.name AS club, countries.name AS nationality
+        FROM swimmers
+        JOIN clubs ON swimmers.club_id = clubs.id
+        JOIN countries ON swimmers.country_id = countries.id
+        ORDER BY swimmers.name"""
         ).fetchall()
         return listing
