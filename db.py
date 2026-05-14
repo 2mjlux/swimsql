@@ -267,6 +267,44 @@ def _seed_disciplines_metres(conn):
 
     conn.executemany(
         """INSERT INTO disciplines_metres (name, stroke, distance, pool_id, is_relay)
-        VALUES (?, ?, ?, ?, ?)""",
-        [(d.name, d.stroke, d.distance, d.pool_id, d.is_relay) for d in disciplines_metres]
+        VALUES (?, ?, ?, ?, ?)""", disciplines
+    )
+
+def _seed_disciplines_yards(conn):
+    """
+    Seed the disciplines (yards) table.
+    """
+    if conn.execute("SELECT COUNT(*) FROM disciplines_yards").fetchone()[0] > 0:
+        return  # already seeded
+
+    individual = [
+        ("Freestyle",    [25, 50, 100, 200, 500, 1000, 1650]),
+        ("Backstroke",   [25, 50, 100, 200]),
+        ("Breaststroke", [25, 50, 100, 200]),
+        ("Butterfly",    [25, 50, 100, 200]),
+        ("Medley",       [100, 200, 400]),
+    ]
+
+    disciplines = []
+    for stroke, distances in individual:
+        for distance in distances:
+            name = f"{distance}y {stroke}"
+            disciplines.append((name, stroke, distance, 0))
+
+    # Relay events are hard-coded rather than generated programmatically
+    relays = [
+        ("4x25y Freestyle Relay",  "Freestyle", 100, 1),
+        ("4x50y Freestyle Relay",  "Freestyle", 200, 1),
+        ("4x100y Freestyle Relay", "Freestyle", 400, 1),
+        ("4x200y Freestyle Relay", "Freestyle", 800, 1),
+        ("4x25y Medley Relay",     "Medley",    100, 1),
+        ("4x50y Medley Relay",     "Medley",    200, 1),
+        ("4x100y Medley Relay",    "Medley",    400, 1),
+    ]
+
+    disciplines.extend(relays)
+
+    conn.executemany(
+        """INSERT INTO disciplines_yards (name, stroke, distance, is_relay)
+        VALUES (?, ?, ?, ?)""", disciplines
     )
