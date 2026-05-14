@@ -308,3 +308,35 @@ def _seed_disciplines_yards(conn):
         """INSERT INTO disciplines_yards (name, stroke, distance, is_relay)
         VALUES (?, ?, ?, ?)""", disciplines
     )
+
+# helper functions
+def cs_to_time(cs):
+    """
+    Convert the performance time from centiseconds to minutes:seconds.hundredths of a
+    second (MM:SS.cc format).
+    """
+    minutes, remainder = divmod(cs, 6000)
+    seconds, hundredths = divmod(remainder, 100)
+    if minutes > 0:
+        return f"{minutes}:{seconds:02d}.{hundredths:02d}"
+    return f"{seconds:02d}.{hundredths:02d}"
+
+def time_to_cs(time_str):
+    """
+    Convert time from MM:SS.cc format to centiseconds.
+    """
+    try:
+        if ":" in time_str:
+            minutes_part, rest = time_str.split(":")
+            seconds_part, hundredths_part = rest.split(".")
+            cs = int(minutes_part)*6000 + int(seconds_part)*100 + int(hundredths_part)
+            return cs
+        seconds_part, hundredths_part = time_str.split(".")
+        cs = int(seconds_part)*100 + int(hundredths_part)
+        return cs
+    except(ValueError, AttributeError):
+        raise ValueError(
+            f"Invalid time format '{time_str}'. Use SS.cc or MM:SS.cc "
+            "(e.g. 28.74 for 28 seconds and 74 hundredths of a second "
+            "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)"
+        )
