@@ -21,6 +21,26 @@ events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley)
 in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
 
 
+## Architecture
+
+SwimSQL follows a strict separation of responsibilities across its modules:
+
+| Module | Responsibility |
+|---|---|
+| `db.py` | All database interaction: SQL queries, inserts, schema creation, seeding |
+| `cli.py` | All user interaction: menus, prompts, input validation |
+| `export.py` | Export of results to XLSX and ODS formats |
+| `swimsql.py` | Entry point: launches the application |
+
+No SQL is written outside `db.py`. No user interaction happens outside `cli.py`.
+The modules communicate in one direction only:
+
+```
+swimsql.py --> cli.py --> db.py --> swimsql.db
+                     --> export.py --> swimsql.xlsx / swimsql.ods
+```
+
+
 ## Database schema
 
 SwimSQL uses a local SQLite database with the following structure:
