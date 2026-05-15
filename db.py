@@ -510,3 +510,34 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
         query += " ORDER BY meets.date_start DESC"
         listing = conn.execute(query, params).fetchall()
         return listing
+
+
+def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None):
+    """
+    List a swimmer's performances in a 25 yards pool."
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        disciplines_yards.name AS discipline, performances_yards.time_cs,
+        performances_yards.date, performances_yards.session, performances_yards.notes
+        FROM performances_yards
+        JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
+        JOIN meets ON performances_yards.meet_id = meets.id
+        JOIN disciplines_yards ON performances_yards.discipline_yards_id =
+        disciplines_yards.id
+        WHERE 1=1
+        """
+        params = []
+        if swimmer_id is not None:
+            query += " AND swimmer_id = ?"
+            params.append(swimmer_id)
+        if discipline_yards_id is not None:
+            query += " AND discipline_yards_id = ?"
+            params.append(discipline_yards_id)
+        if year is not None:
+            query += " AND strftime('%Y', date) = ?"
+            params.append(str(year))
+        query += " ORDER BY meets.date_start DESC"
+        listing = conn.execute(query, params).fetchall()
+        return listing
