@@ -1,8 +1,14 @@
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at
+# http://mozilla.org/MPL/2.0/.
+# Copyright (c) 2026 Michael JJ Martin
+
 import sqlite3
 import pycountry
 from pathlib import Path
 
 DB_PATH = Path.home() / ".swimsql" / "swimsql.db"
+
 
 def get_connection():
     """
@@ -20,6 +26,7 @@ def get_connection():
     # PRAGMA sets SQLite configuration (SQLite-level)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
 
 def init_db():
     """
@@ -178,6 +185,7 @@ def init_db():
         _seed_disciplines_metres(conn)
         _seed_disciplines_yards(conn)
 
+
 def _seed_pools(conn):
     """
     Seed the pools table with standard competitive pool sizes on first run.
@@ -187,12 +195,13 @@ def _seed_pools(conn):
     conn.executemany(
         "INSERT INTO pools (length, unit, name) VALUES (?, ?, ?)",
         [
-        (25, "metres", "Short Course 25 Metres"),
-        (50, "metres", "Long Course 50 Metres"),
-        (33, "metres", "Mid Course 33 Metres"),
-        (25, "yards", "Short Course 25 Yards"),
-        ]
+            (25, "metres", "Short Course 25 Metres"),
+            (50, "metres", "Long Course 50 Metres"),
+            (33, "metres", "Mid Course 33 Metres"),
+            (25, "yards", "Short Course 25 Yards"),
+        ],
     )
+
 
 def _seed_countries(conn):
     """
@@ -202,8 +211,9 @@ def _seed_countries(conn):
         return  # already seeded
     conn.executemany(
         "INSERT INTO countries (name, code) VALUES (?, ?)",
-        [(c.name, c.alpha_3) for c in pycountry.countries]
+        [(c.name, c.alpha_3) for c in pycountry.countries],
     )
+
 
 def _seed_disciplines_metres(conn):
     """
@@ -214,15 +224,15 @@ def _seed_disciplines_metres(conn):
 
     # Build a pool name -> id lookup dictionary to avoid repeated SQL queries
     pools = {
-            row["name"]: row["id"] for row in conn.execute("SELECT id, name FROM pools")
-            }
+        row["name"]: row["id"] for row in conn.execute("SELECT id, name FROM pools")
+    }
 
     individual = [
-        ("Freestyle",    [25, 50, 100, 200, 400, 800, 1500]),
-        ("Backstroke",   [25, 50, 100, 200]),
+        ("Freestyle", [25, 50, 100, 200, 400, 800, 1500]),
+        ("Backstroke", [25, 50, 100, 200]),
         ("Breaststroke", [25, 50, 100, 200]),
-        ("Butterfly",    [25, 50, 100, 200]),
-        ("Medley",       [100, 200, 400]),
+        ("Butterfly", [25, 50, 100, 200]),
+        ("Medley", [100, 200, 400]),
     ]
 
     disciplines = []
@@ -236,9 +246,11 @@ def _seed_disciplines_metres(conn):
             elif stroke == "Medley" and distance == 100:
                 applicable_pools = ["Short Course 25 Metres"]
             else:
-                applicable_pools = ["Short Course 25 Metres", "Long Course 50 Metres",
-                                    "Mid Course 33 Metres"
-                                   ]
+                applicable_pools = [
+                    "Short Course 25 Metres",
+                    "Long Course 50 Metres",
+                    "Mid Course 33 Metres",
+                ]
 
             for pool_name in applicable_pools:
                 pool_id = pools[pool_name]
@@ -247,28 +259,42 @@ def _seed_disciplines_metres(conn):
 
     # Relay events are hard-coded rather than generated programmatically
     relays = [
-        ("4x25m Freestyle Relay",  "Freestyle", 100, pools["Short Course 25 Metres"], 1),
-        ("4x50m Freestyle Relay",  "Freestyle", 200, pools["Short Course 25 Metres"], 1),
-        ("4x100m Freestyle Relay", "Freestyle", 400, pools["Short Course 25 Metres"], 1),
-        ("4x200m Freestyle Relay", "Freestyle", 800, pools["Short Course 25 Metres"], 1),
-        ("4x50m Medley Relay",     "Medley",    200, pools["Short Course 25 Metres"], 1),
-        ("4x100m Medley Relay",    "Medley",    400, pools["Short Course 25 Metres"], 1),
-        ("4x50m Freestyle Relay",  "Freestyle", 200, pools["Long Course 50 Metres"], 1),
+        ("4x25m Freestyle Relay", "Freestyle", 100, pools["Short Course 25 Metres"], 1),
+        ("4x50m Freestyle Relay", "Freestyle", 200, pools["Short Course 25 Metres"], 1),
+        (
+            "4x100m Freestyle Relay",
+            "Freestyle",
+            400,
+            pools["Short Course 25 Metres"],
+            1,
+        ),
+        (
+            "4x200m Freestyle Relay",
+            "Freestyle",
+            800,
+            pools["Short Course 25 Metres"],
+            1,
+        ),
+        ("4x50m Medley Relay", "Medley", 200, pools["Short Course 25 Metres"], 1),
+        ("4x100m Medley Relay", "Medley", 400, pools["Short Course 25 Metres"], 1),
+        ("4x50m Freestyle Relay", "Freestyle", 200, pools["Long Course 50 Metres"], 1),
         ("4x100m Freestyle Relay", "Freestyle", 400, pools["Long Course 50 Metres"], 1),
         ("4x200m Freestyle Relay", "Freestyle", 800, pools["Long Course 50 Metres"], 1),
-        ("4x50m Medley Relay",     "Medley",    200, pools["Long Course 50 Metres"], 1),
-        ("4x100m Medley Relay",    "Medley",    400, pools["Long Course 50 Metres"], 1),
+        ("4x50m Medley Relay", "Medley", 200, pools["Long Course 50 Metres"], 1),
+        ("4x100m Medley Relay", "Medley", 400, pools["Long Course 50 Metres"], 1),
         ("4x100m Freestyle Relay", "Freestyle", 400, pools["Mid Course 33 Metres"], 1),
         ("4x200m Freestyle Relay", "Freestyle", 800, pools["Mid Course 33 Metres"], 1),
-        ("4x100m Medley Relay",    "Medley",    400, pools["Mid Course 33 Metres"], 1),
+        ("4x100m Medley Relay", "Medley", 400, pools["Mid Course 33 Metres"], 1),
     ]
 
     disciplines.extend(relays)
 
     conn.executemany(
         """INSERT INTO disciplines_metres (name, stroke, distance, pool_id, is_relay)
-        VALUES (?, ?, ?, ?, ?)""", disciplines
+        VALUES (?, ?, ?, ?, ?)""",
+        disciplines,
     )
+
 
 def _seed_disciplines_yards(conn):
     """
@@ -278,11 +304,11 @@ def _seed_disciplines_yards(conn):
         return  # already seeded
 
     individual = [
-        ("Freestyle",    [25, 50, 100, 200, 500, 1000, 1650]),
-        ("Backstroke",   [25, 50, 100, 200]),
+        ("Freestyle", [25, 50, 100, 200, 500, 1000, 1650]),
+        ("Backstroke", [25, 50, 100, 200]),
         ("Breaststroke", [25, 50, 100, 200]),
-        ("Butterfly",    [25, 50, 100, 200]),
-        ("Medley",       [100, 200, 400]),
+        ("Butterfly", [25, 50, 100, 200]),
+        ("Medley", [100, 200, 400]),
     ]
 
     disciplines = []
@@ -293,21 +319,23 @@ def _seed_disciplines_yards(conn):
 
     # Relay events are hard-coded rather than generated programmatically
     relays = [
-        ("4x25y Freestyle Relay",  "Freestyle", 100, 1),
-        ("4x50y Freestyle Relay",  "Freestyle", 200, 1),
+        ("4x25y Freestyle Relay", "Freestyle", 100, 1),
+        ("4x50y Freestyle Relay", "Freestyle", 200, 1),
         ("4x100y Freestyle Relay", "Freestyle", 400, 1),
         ("4x200y Freestyle Relay", "Freestyle", 800, 1),
-        ("4x25y Medley Relay",     "Medley",    100, 1),
-        ("4x50y Medley Relay",     "Medley",    200, 1),
-        ("4x100y Medley Relay",    "Medley",    400, 1),
+        ("4x25y Medley Relay", "Medley", 100, 1),
+        ("4x50y Medley Relay", "Medley", 200, 1),
+        ("4x100y Medley Relay", "Medley", 400, 1),
     ]
 
     disciplines.extend(relays)
 
     conn.executemany(
         """INSERT INTO disciplines_yards (name, stroke, distance, is_relay)
-        VALUES (?, ?, ?, ?)""", disciplines
+        VALUES (?, ?, ?, ?)""",
+        disciplines,
     )
+
 
 # helper function
 def cs_to_time(cs):
@@ -321,6 +349,7 @@ def cs_to_time(cs):
         return f"{minutes}:{seconds:02d}.{hundredths:02d}"
     return f"{seconds:02d}.{hundredths:02d}"
 
+
 # helper function
 def time_to_cs(time_str):
     """
@@ -330,17 +359,22 @@ def time_to_cs(time_str):
         if ":" in time_str:
             minutes_part, rest = time_str.split(":")
             seconds_part, hundredths_part = rest.split(".")
-            cs = int(minutes_part)*6000 + int(seconds_part)*100 + int(hundredths_part)
+            cs = (
+                int(minutes_part) * 6000
+                + int(seconds_part) * 100
+                + int(hundredths_part)
+            )
             return cs
         seconds_part, hundredths_part = time_str.split(".")
-        cs = int(seconds_part)*100 + int(hundredths_part)
+        cs = int(seconds_part) * 100 + int(hundredths_part)
         return cs
-    except(ValueError, AttributeError):
+    except (ValueError, AttributeError):
         raise ValueError(
             f"Invalid time format '{time_str}'. Use SS.cc or MM:SS.cc "
             "(e.g. 28.74 for 28 seconds and 74 hundredths of a second "
             "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)"
         )
+
 
 def add_meet(name, date_start, country_id, date_end=None, location=None, notes=None):
     """
@@ -349,10 +383,12 @@ def add_meet(name, date_start, country_id, date_end=None, location=None, notes=N
     meet = (name, date_start, country_id, date_end, location, notes)
     with get_connection() as conn:
         cursor = conn.execute(
-        """INSERT INTO meets (name, date_start, country_id, date_end, location,
-        notes) VALUES (?, ?, ?, ?, ?, ?)""", meet
+            """INSERT INTO meets (name, date_start, country_id, date_end, location,
+        notes) VALUES (?, ?, ?, ?, ?, ?)""",
+            meet,
         )
         return cursor.lastrowid
+
 
 def list_meets():
     """
@@ -360,9 +396,10 @@ def list_meets():
     """
     with get_connection() as conn:
         listing = conn.execute(
-        """SELECT * FROM meets ORDER BY date_start DESC"""
+            """SELECT * FROM meets ORDER BY date_start DESC"""
         ).fetchall()
         return listing
+
 
 def add_swimmer(name, date_of_birth, gender, club_id, country_id):
     """
@@ -371,22 +408,30 @@ def add_swimmer(name, date_of_birth, gender, club_id, country_id):
     swimmer = (name, date_of_birth, gender, club_id, country_id)
     with get_connection() as conn:
         cursor = conn.execute(
-        """INSERT INTO swimmers (name, date_of_birth, gender, club_id, country_id)
-        VALUES (?, ?, ?, ?, ?)""", swimmer
+            """INSERT INTO swimmers (name, date_of_birth, gender, club_id, country_id)
+        VALUES (?, ?, ?, ?, ?)""",
+            swimmer,
         )
         return cursor.lastrowid
+
 
 def list_swimmers():
     """
     List all swimmers ordered by name.
     """
     with get_connection() as conn:
-        listing = conn.execute(
-        """SELECT swimmers.id, swimmers.name, swimmers.date_of_birth, swimmers.gender,
-        clubs.name AS club, countries.name AS nationality
-        FROM swimmers
-        JOIN clubs ON swimmers.club_id = clubs.id
-        JOIN countries ON swimmers.country_id = countries.id
-        ORDER BY swimmers.name"""
-        ).fetchall()
+        listing = conn.execute("""
+            SELECT swimmers.id, swimmers.name, swimmers.date_of_birth,
+                   swimmers.gender, clubs.name AS club, countries.name AS nationality
+            FROM swimmers
+            JOIN clubs ON swimmers.club_id = clubs.id
+            JOIN countries ON swimmers.country_id = countries.id
+            ORDER BY swimmers.name
+            """).fetchall()
         return listing
+
+
+def add_performance_metres(
+    swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None, notes=None
+):
+    pass
