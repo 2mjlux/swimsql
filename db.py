@@ -479,3 +479,34 @@ def add_performance_yards(
             performance,
         )
         return cursor.lastrowid
+
+
+def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=None):
+    """
+    List a swimmer's performances in a 25, 33 and 50 metres pool."
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        disciplines_metres.name AS discipline, performances_metres.time_cs,
+        performances_metres.date, performances_metres.session, performances_metres.notes
+        FROM performances_metres
+        JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
+        JOIN meets ON performances_metres.meet_id = meets.id
+        JOIN disciplines_metres ON performances_metres.discipline_metres_id =
+        disciplines_metres.id
+        WHERE 1=1
+        """
+        params = []
+        if swimmer_id is not None:
+            query += " AND swimmer_id = ?"
+            params.append(swimmer_id)
+        if discipline_metres_id is not None:
+            query += " AND discipline_metres_id = ?"
+            params.append(discipline_metres_id)
+        if year is not None:
+            query += " AND strftime('%Y', date) = ?"
+            params.append(str(year))
+        query += " ORDER BY meets.date_start DESC"
+        listing = conn.execute(query, params).fetchall()
+        return listing
