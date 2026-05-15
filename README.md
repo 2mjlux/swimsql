@@ -165,4 +165,4 @@ The SwimSQL project is licensed under the
 You are free to use, modify, and distribute this software, provided that
 any modifications to the original files are released under the same licence.
 
-Copyright (c) 2026 Michael JJ Martin
+Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
