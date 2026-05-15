@@ -434,4 +434,48 @@ def list_swimmers():
 def add_performance_metres(
     swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None, notes=None
 ):
-    pass
+    """
+    Add a swimmer's performance to the performances_metres table.
+    """
+    performance = (
+        swimmer_id,
+        meet_id,
+        discipline_metres_id,
+        time_cs,
+        date,
+        session,
+        notes,
+    )
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """INSERT INTO performances_metres (swimmer_id, meet_id,
+            discipline_metres_id, time_cs, date, session, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            performance,
+        )
+        return cursor.lastrowid
+
+
+def add_performance_yards(
+    swimmer_id, meet_id, discipline_yards_id, time_cs, date, session=None, notes=None
+):
+    """
+    Add a swimmer's performance to the performances_yards table.
+    """
+    performance = (
+        swimmer_id,
+        meet_id,
+        discipline_yards_id,
+        time_cs,
+        date,
+        session,
+        notes,
+    )
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """INSERT INTO performances_yards (swimmer_id, meet_id,
+            discipline_yards_id, time_cs, date, session, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            performance,
+        )
+        return cursor.lastrowid
