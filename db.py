@@ -483,7 +483,8 @@ def add_performance_yards(
 
 def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=None):
     """
-    List a swimmer's performances in a 25, 33 and 50 metres pool."
+    List a swimmers' performances in a 25, 33 and 50 metres pool.  Possibility to
+    filter by swimmer, discipline and year."
     """
     with get_connection() as conn:
         query = """
@@ -514,7 +515,8 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
 
 def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None):
     """
-    List a swimmer's performances in a 25 yards pool."
+    List a swimmers' performances in a 25 yards pool. Possibility to filter by
+    swimmer, discipline and year."
     """
     with get_connection() as conn:
         query = """
@@ -541,3 +543,38 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
         query += " ORDER BY meets.date_start DESC"
         listing = conn.execute(query, params).fetchall()
         return listing
+
+
+def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_id=None):
+    """
+    Return swimmers' best performances in a 25, 33 and 50m pool.  Possibility to filter
+    by swimmer, discipline and pool size.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT
+            disciplines_metres.name AS discipline,
+            MIN(performances_metres.time_cs) AS best_cs,
+            pools.name AS pool,
+            meets.date_start AS date
+        FROM performances_metres
+        JOIN disciplines_metres ON
+        performances_metres.discipline_metres_id = disciplines_metres.id
+        JOIN pools ON disciplines_metres.pool_id = pools.id
+        JOIN meets ON performances_metres.meet_id = meets.id
+        WHERE 1=1
+        """
+        params = []
+        if swimmer_id is not None:
+            query += " AND performances_metres.swimmer_id = ?"
+            params.append(swimmer_id)
+        if discipline_metres_id is not None:
+            query += " AND performances_metres.discipline_metres_id = ?"
+            params.append(discipline_metres_id)
+        if pool_id is not None:
+            query += " AND disciplines_metres.pool_id = ?"
+            params.append(pool_id)
+        query += " GROUP BY performances_metres.discipline_metres_id"
+        query += " ORDER BY pools.name, disciplines_metres.name"
+        personal_bests = conn.execute(query, params).fetchall()
+        return personal_bests
