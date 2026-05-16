@@ -10,6 +10,7 @@ from pathlib import Path
 DB_PATH = Path.home() / ".swimsql" / "swimsql.db"
 
 
+# Setup
 def get_connection():
     """
     Open and return a configured connection to the SQLite database.
@@ -186,6 +187,7 @@ def init_db():
         _seed_disciplines_yards(conn)
 
 
+# Seeding
 def _seed_pools(conn):
     """
     Seed the pools table with standard competitive pool sizes on first run.
@@ -337,7 +339,7 @@ def _seed_disciplines_yards(conn):
     )
 
 
-# helper function
+# Time helpers
 def cs_to_time(cs):
     """
     Convert the performance time from centiseconds to minutes:seconds.hundredths of a
@@ -350,7 +352,6 @@ def cs_to_time(cs):
     return f"{seconds:02d}.{hundredths:02d}"
 
 
-# helper function
 def time_to_cs(time_str):
     """
     Convert time from MM:SS.cc format to centiseconds.
@@ -376,6 +377,7 @@ def time_to_cs(time_str):
         )
 
 
+# Meets
 def add_meet(name, date_start, country_id, date_end=None, location=None, notes=None):
     """
     Add a meet to the meets table.
@@ -401,6 +403,7 @@ def list_meets():
         return listing
 
 
+# Swimmers
 def add_swimmer(name, date_of_birth, gender, club_id, country_id):
     """
     Add a swimmer to the swimmers table.
@@ -431,6 +434,7 @@ def list_swimmers():
         return listing
 
 
+# Performances
 def add_performance_metres(
     swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None, notes=None
 ):
@@ -608,3 +612,60 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         query += " ORDER BY disciplines_yards.name"
         personal_bests = conn.execute(query, params).fetchall()
         return personal_bests
+
+
+# Lookup functions for cli.py
+def list_countries():
+    """
+    List all countries ordered by their full name.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT *
+        FROM countries
+        ORDER BY name
+        """
+        listing = conn.execute(query).fetchall()
+        return listing
+
+
+def list_clubs():
+    """
+    List all clubs ordered by their full name.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT *
+        FROM clubs
+        ORDER BY name
+        """
+        listing = conn.execute(query).fetchall()
+        return listing
+
+
+def list_disciplines_metres():
+    """
+    List all disciplines in pool sizes 25, 33 and 50 metres, ordered by their full name.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT *
+        FROM disciplines_metres
+        ORDER BY name
+        """
+        listing = conn.execute(query).fetchall()
+        return listing
+
+
+def list_disciplines_yards():
+    """
+    List all disciplines in a 25 yards pool, ordered by their full name.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT *
+        FROM disciplines_yards
+        ORDER BY name
+        """
+        listing = conn.execute(query).fetchall()
+        return listing
