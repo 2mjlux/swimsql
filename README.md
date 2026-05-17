@@ -40,6 +40,35 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
                      --> export.py --> swimsql.xlsx / swimsql.ods
 ```
 
+### cli.py in detail
+
+`cli.py` contains three types of functions:
+
+**Helper functions** — reusable building blocks:
+- `prompt()` — ask the user for a single input
+- `select_from_list()` — show a numbered list, return the chosen item
+- `confirm()` — ask a yes/no question
+- `select_discipline_metres()` — guided sub-menu for picking a metres discipline
+- `select_discipline_yards()` — guided sub-menu for picking a yards discipline
+
+**Flow functions** — one per menu option:
+- `flow_add_meet()` — prompts for meet details, calls `add_meet()` from `db.py`
+- `flow_add_swimmer()` — prompts for swimmer details, calls `add_swimmer()`
+- `flow_add_performance()` — prompts for performance, calls `add_performance_metres()` or `add_performance_yards()`
+- `flow_list_performances()` — asks for filters, displays results via tabulate
+- `flow_personal_bests()` — displays personal bests via tabulate
+- `flow_export()` — generates XLSX/ODS file via `export.py`
+
+**Main menu** — the `main()` function that ties everything together.
+
+### Key principle
+
+`cli.py` never writes SQL. `db.py` never asks the user anything.
+They communicate in one direction:
+```
+cli.py collects input --> calls db.py functions --> db.py returns data --> cli.py displays it
+```
+
 
 ## Database schema
 
