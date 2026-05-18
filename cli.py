@@ -39,9 +39,50 @@ def select_from_list(items, label_fn, title):
         print(f"  {i}. {label_fn(item)}")
     print("  0. Cancel")
     while True:
-        choice = input("Choice: ").strip()
+        choice = input("Enter number: ").strip()
         if choice == "0":
             return None
         if choice.isdigit() and 1 <= int(choice) <= len(items):
             return items[int(choice) - 1]
         print("  Invalid choice, please try again.")
+
+
+def select_discipline_metres():
+    """
+    Guide the user through selecting a metres discipline via sub-menus.
+    Steps: pool -> stroke -> distance -> individual/relay (if applicable).
+    Return a disciplines_metres row or None if cancelled.
+    """
+
+    # Pick a pool
+    pools = db.list_pools_metres()
+    pool = select_from_list(pools, lambda p: p["name"], "Select pool size")
+    if pool is None:
+        return None  # selection cancelled
+
+    # Pick a stroke
+    disciplines = db.list_disciplines_metres()
+    pool_disciplines = [d for d in disciplines if d["pool_id"] == pool["id"]]
+    strokes = sorted(set(d["stroke"] for d in pool_disciplines))
+    stroke = select_from_list(strokes, lambda s: s, "Select stroke")
+    if stroke is None:
+        return None  # selection cancelled
+
+    # Pick a distance
+    stroke_disciplines = [d for d in pool_disciplines if d["stroke"] == stroke]
+    distances = sorted(set(d["distance"] for d in stroke_disciplines))
+    distance = select_from_list(distances, lambda d: f"{d}m", "Select distance")
+    if distance is None:
+        return None  # selection cancelled
+
+    # Check Individual or Relay
+    ultimate = [d for d in stroke_disciplines if d["distance"] == distance]
+    if len(ultimate) == 1:
+        return ultimate[0]  # only one option, no need to ask
+    options = ["Individual", "Relay"]
+    selection = select_from_list(options, lambda o: o, "Individual or Relay?")
+    if selection is None:
+        return None  # selection cancelled
+    individual = [d for d in ultimate if d["is_relay"] == 0]
+    relay = [d for d in ultimate if d["is_relay"] == 1]
+    return individual[0] if selection == "Individual" else relay[0]
