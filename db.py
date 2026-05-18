@@ -669,3 +669,18 @@ def list_disciplines_yards():
         """
         listing = conn.execute(query).fetchall()
         return listing
+
+
+def list_pools_metres():
+    """
+    List all pool sizes in metres.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT *
+        FROM pools
+        WHERE unit = 'metres'
+        ORDER BY id
+        """
+        listing = conn.execute(query).fetchall()
+        return listing
