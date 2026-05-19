@@ -86,3 +86,37 @@ def select_discipline_metres():
     individual = [d for d in ultimate if d["is_relay"] == 0]
     relay = [d for d in ultimate if d["is_relay"] == 1]
     return individual[0] if selection == "Individual" else relay[0]
+
+
+def select_discipline_yards():
+    """
+    Guide the user through selecting a yards discipline via sub-menus.
+    Steps: stroke -> distance -> individual/relay (if applicable).
+    Return a disciplines_yards row or None if cancelled.
+    """
+
+    # Pick a stroke
+    disciplines = db.list_disciplines_yards()
+    strokes = sorted(set(d["stroke"] for d in disciplines))
+    stroke = select_from_list(strokes, lambda s: s, "Select stroke")
+    if stroke is None:
+        return None  # selection cancelled
+
+    # Pick a distance
+    stroke_disciplines = [d for d in disciplines if d["stroke"] == stroke]
+    distances = sorted(set(d["distance"] for d in stroke_disciplines))
+    distance = select_from_list(distances, lambda d: f"{d}y", "Select distance")
+    if distance is None:
+        return None  # selection cancelled
+
+    # Check Individual or Relay
+    ultimate = [d for d in stroke_disciplines if d["distance"] == distance]
+    if len(ultimate) == 1:
+        return ultimate[0]  # only one option, no need to ask
+    options = ["Individual", "Relay"]
+    selection = select_from_list(options, lambda o: o, "Individual or Relay?")
+    if selection is None:
+        return None  # selection cancelled
+    individual = [d for d in ultimate if d["is_relay"] == 0]
+    relay = [d for d in ultimate if d["is_relay"] == 1]
+    return individual[0] if selection == "Individual" else relay[0]
