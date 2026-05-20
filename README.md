@@ -1,7 +1,9 @@
 # SwimSQL
 
+
 > ⚠️ This project is currently under active development and is not yet functional.
 > The database layer (`db.py`) is complete. The CLI interface (`cli.py`) is in progress.
+
 
 A command-line tool for tracking swimming competition performances,
 built with Python and SQLite.
