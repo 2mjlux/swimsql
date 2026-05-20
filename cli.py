@@ -67,10 +67,30 @@ def select_from_list(items, label_fn, title):
     while True:
         choice = input("Enter number: ").strip()
         if choice == "0":
-            return None
+            return None  # selection cancelled
         if choice.isdigit() and 1 <= int(choice) <= len(items):
             return items[int(choice) - 1]
         print("  Invalid choice, please try again.")
+
+
+def search_from_list(items, label_fn, title):
+    """
+    Display a filtered list of items corresponding to the first letter(s) typed by the
+    user.  Return the item the user picks.  Returns None if the user cancels with 0."
+    """
+    print(title)
+    print("  0. Cancel")
+    while True:
+        search = input("Enter the first letter(s): ").strip().lower()
+        if search == "0":
+            return None  # selection cancelled
+        filtered = [item for item in items if search in label_fn(item).lower()]
+        if not filtered:
+            print("No item starting with the letter(s) typed. Try again.")
+        elif len(filtered) == 1:
+            return filtered[0]
+        else:
+            return select_from_list(filtered, label_fn, title)
 
 
 def select_discipline_metres():
