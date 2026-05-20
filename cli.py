@@ -170,4 +170,22 @@ def select_discipline_yards():
 
 # Flow functions
 def flow_add_meet():
-    pass
+    """
+    Function for the user to add a Meet.
+    """
+    print("--- Add Meet ---")
+    while True:
+        name = prompt("Name of Meet")
+        if name:
+            break
+        print("  Meet name is required.")
+    date_start = prompt_date("Start date")
+    date_end = prompt_date("End date", optional=True)
+    location = prompt("Location", optional=True)
+    country = search_from_list(db.list_countries(), lambda c: c["name"], "Select country")
+    if country is None:
+        return
+    country_id = country["id"]
+    notes = prompt("Notes", optional=True)
+    db.add_meet(name, date_start, country_id, date_end, location, notes)
+    print(f"  Meet '{name}' successfully added!")
