@@ -21,6 +21,32 @@ def prompt(label, optional=False):
     return value if value else None
 
 
+def prompt_date(label, optional=False):
+    """
+    Ask the user for a date in YYYY-MM-DD format.
+    Returns None if optional and user pressed Enter without typing.
+    """
+    while True:
+        if optional:
+            date = input(
+                f"{label} (YYYY-MM-DD, optional - press Enter to skip):"
+            ).strip()
+            if not date:
+                return None
+        else:
+            date = input(f"{label} (YYYY-MM-DD): ").strip()
+        if (
+            len(date) == 10
+            and date[0:4].isdigit()
+            and date[4] == "-"
+            and date[5:7].isdigit()
+            and date[7] == "-"
+            and date[8:10].isdigit()
+        ):
+            return date
+        print(" Invalid date format. Please use YYYY-MM-DD (e.g. 2026-05-20).")
+
+
 def confirm(question):
     """
     Asks the user a yes/no question.  True means yes and False means no.
@@ -120,3 +146,8 @@ def select_discipline_yards():
     individual = [d for d in ultimate if d["is_relay"] == 0]
     relay = [d for d in ultimate if d["is_relay"] == 1]
     return individual[0] if selection == "Individual" else relay[0]
+
+
+# Flow functions
+def flow_add_meet():
+    pass
