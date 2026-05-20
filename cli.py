@@ -182,10 +182,43 @@ def flow_add_meet():
     date_start = prompt_date("Start date")
     date_end = prompt_date("End date", optional=True)
     location = prompt("Location", optional=True)
-    country = search_from_list(db.list_countries(), lambda c: c["name"], "Select country")
+    country = search_from_list(
+        db.list_countries(), lambda c: c["name"], "Select country"
+    )
     if country is None:
         return
     country_id = country["id"]
     notes = prompt("Notes", optional=True)
     db.add_meet(name, date_start, country_id, date_end, location, notes)
     print(f"  Meet '{name}' successfully added!")
+
+
+def flow_add_swimmer():
+    """
+    Function for the user to add a swimmer.
+    """
+    print("--- Add Swimmer ---")
+    while True:
+        name = prompt("Name of swimmer")
+        if name:
+            break
+        print("  Swimmer's name is required.")
+    date_of_birth = prompt_date("Date of birth")
+    while True:
+        gender = prompt("Gender of swimmer (enter M or F)")
+        if gender and gender.upper() in ("M", "F"):
+            gender = gender.upper()
+            break
+        print("  Please enter M or F.")
+    club = search_from_list(db.list_clubs(), lambda cl: cl["name"], "Select club")
+    if club is None:
+        return
+    club_id = club["id"]
+    country = search_from_list(
+        db.list_countries(), lambda c: c["name"], "Select country (nationality)"
+    )
+    if country is None:
+        return
+    country_id = country["id"]
+    db.add_swimmer(name, date_of_birth, gender, club_id, country_id)
+    print(f"  Swimmer '{name}' successfully added!")
