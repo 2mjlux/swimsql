@@ -222,3 +222,59 @@ def flow_add_swimmer():
     country_id = country["id"]
     db.add_swimmer(name, date_of_birth, gender, club_id, country_id)
     print(f"  Swimmer '{name}' successfully added!")
+
+
+def flow_add_performance():
+    """
+    Function for the user to add a swimmer's performance.
+    """
+    print("--- Add Performance ---")
+    swimmer = search_from_list(
+        db.list_swimmers(), lambda s: s["name"], "Select swimmer"
+    )
+    if swimmer is None:
+        return
+    swimmer_id = swimmer["id"]
+    units = ["Metres", "Yards"]
+    unit = select_from_list(
+        units, lambda u: u, "Select Metres or Yards"
+    )
+    if unit is None:
+        return
+    if unit == "Metres":
+        discipline = select_discipline_metres()
+        if discipline is None:
+            return
+        discipline_metres_id = discipline["id"]
+    else:
+        discipline = select_discipline_yards()
+        if discipline is None:
+            return
+        discipline_yards_id = discipline["id"]
+    meet = search_from_list(
+        db.list_meets(), lambda m: f"{m['date_start']} - {m['name']}", "Select Meet"
+    )
+    if meet is None:
+        return
+    meet_id = meet["id"]
+    date = prompt_date("Date of performance")
+    session = None
+    if confirm("Add session (AM/PM)?")
+        sessions = ["AM", "PM"]
+        session = select_from_list(
+            sessions, lambda s: s, "Select 'AM' (morning) or 'PM' (afternoon/evening)"
+        )
+    while True:
+    time_str = prompt("Enter time in MM:SS.cc format (minutes:seconds.centiseconds)")
+        print(" Invalid time format. Please use MM:SS.cc (e.g. 01:05.56).")
+    time_cs = db.time_to_cs(time_str)
+    notes = prompt("Enter your notes (optional - press Enter for None)")
+    if unit == "Metres":
+        db.add_performance_metres(
+            swimmer_id, meet_id, discipline_metres_id, time_cs, date, session, notes
+        )
+    else:
+        db.add_performance_yards(
+            swimmer_id, meet_id, discipline_yards_id, time_cs, date, session, notes
+        )
+    print("Performance {time_str} successfully added!")
