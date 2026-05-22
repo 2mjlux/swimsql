@@ -236,9 +236,7 @@ def flow_add_performance():
         return
     swimmer_id = swimmer["id"]
     units = ["Metres", "Yards"]
-    unit = select_from_list(
-        units, lambda u: u, "Select Metres or Yards"
-    )
+    unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
     if unit is None:
         return
     if unit == "Metres":
@@ -265,7 +263,10 @@ def flow_add_performance():
             sessions, lambda s: s, "Select 'AM' (morning) or 'PM' (afternoon/evening)"
         )
     while True:
-        time_str = prompt("Enter time in MM:SS.cc format (minutes:seconds.centiseconds), e.g. 30.05 or 1:01.56")
+        time_str = prompt(
+            "Enter time in MM:SS.cc format (minutes:seconds.centiseconds), "
+            "e.g. 30.05 or 1:01.56"
+        )
         if time_str is None:
             print("  Time is required.")
             continue
