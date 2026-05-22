@@ -259,16 +259,22 @@ def flow_add_performance():
     meet_id = meet["id"]
     date = prompt_date("Date of performance")
     session = None
-    if confirm("Add session (AM/PM)?")
+    if confirm("Add session (AM/PM)?"):
         sessions = ["AM", "PM"]
         session = select_from_list(
             sessions, lambda s: s, "Select 'AM' (morning) or 'PM' (afternoon/evening)"
         )
     while True:
-    time_str = prompt("Enter time in MM:SS.cc format (minutes:seconds.centiseconds)")
-        print(" Invalid time format. Please use MM:SS.cc (e.g. 01:05.56).")
-    time_cs = db.time_to_cs(time_str)
-    notes = prompt("Enter your notes (optional - press Enter for None)")
+        time_str = prompt("Enter time in MM:SS.cc format (minutes:seconds.centiseconds), e.g. 30.05 or 1:01.56")
+        if time_str is None:
+            print("  Time is required.")
+            continue
+        try:
+            time_cs = db.time_to_cs(time_str)
+            break
+        except ValueError as e:
+            print(f"  {e}")
+    notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
             swimmer_id, meet_id, discipline_metres_id, time_cs, date, session, notes
@@ -277,4 +283,4 @@ def flow_add_performance():
         db.add_performance_yards(
             swimmer_id, meet_id, discipline_yards_id, time_cs, date, session, notes
         )
-    print("Performance {time_str} successfully added!")
+    print(f"  Performance {time_str} successfully added!")

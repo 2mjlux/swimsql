@@ -373,7 +373,8 @@ def time_to_cs(time_str):
         raise ValueError(
             f"Invalid time format '{time_str}'. Use SS.cc or MM:SS.cc "
             "(e.g. 28.74 for 28 seconds and 74 hundredths of a second "
-            "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)"
+            "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)."
+            " Centiseconds must always be exactly 2 digits (e.g. 28.70 not 27.7)."
         )
 
 
