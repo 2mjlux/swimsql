@@ -47,6 +47,26 @@ def prompt_date(label, optional=False):
         print(" Invalid date format. Please use YYYY-MM-DD (e.g. 2026-05-20).")
 
 
+def prompt_year(label, optional=False):
+    """
+    Ask the user for a year in YYYY format.
+    Returns the year as an integer.
+    Returns None if optional and user pressed Enter without typing.
+    """
+    while True:
+        if optional:
+            year = input(
+                f"{label} (YYYY, optional - press Enter to skip):"
+            ).strip()
+            if not year:
+                return None
+        else:
+            year = input(f"{label} (YYYY): ").strip()
+        if year.isdigit() and len(year) == 4:
+            return int(year)
+        print("  Invalid year format.  Please use YYYY (e.g. 2026).")
+
+
 def confirm(question):
     """
     Asks the user a yes/no question.  True means yes and False means no.
@@ -285,3 +305,5 @@ def flow_add_performance():
             swimmer_id, meet_id, discipline_yards_id, time_cs, date, session, notes
         )
     print(f"  Performance {time_str} successfully added!")
+
+
