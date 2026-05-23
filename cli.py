@@ -307,3 +307,64 @@ def flow_add_performance():
     print(f"  Performance {time_str} successfully added!")
 
 
+def flow_list_performances():
+    """
+    List the performances of a swimmer, with discipline and year as optional filters.
+    """
+    print("--- List Performances ---")
+    swimmer = search_from_list(
+        db.list_swimmers(), lambda s: s["name"], "Select swimmer"
+    )
+    if swimmer is None:
+        return
+    swimmer_id = swimmer["id"]
+    units = ["Metres", "Yards"]
+    unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
+    if unit is None:
+        return
+    discipline_metres_id = None
+    discipline_yards_id = None
+    if confirm("Filter by discipline?"):
+        if unit == "Metres":
+            discipline = select_discipline_metres()
+            if discipline is None:
+                return
+            discipline_metres_id = discipline["id"]
+        else:
+            discipline = select_discipline_yards()
+            if discipline is None:
+                return
+            discipline_yards_id = discipline["id"]
+    year = None
+    if confirm("Filter by year?"):
+        year = prompt_year("Year", optional=True)
+    if unit == "Metres":
+        results = db.list_performances_metres(swimmer_id, discipline_metres_id, year)
+    else:
+        results = db.list_performances_yards(swimmer_id, discipline_yards_id, year)
+    if not results:
+        print("  No performances found.")
+        return
+    rows = [
+        [
+            r["swimmer"],
+            r["meet"],
+            r["date"],
+            r["discipline"],
+            db.cs_to_time(r["time_cs"]),
+            r["session"] or "",
+            r["notes"] or "",
+        ]
+        for r in results
+    ]
+    headers = [
+        "Swimmer",
+        "Meet",
+        "Date",
+        "Discipline",
+        "Time",
+        "Session",
+        "Notes"
+    ]
+    print(tabulate(rows, headers=headers, tablefmt="github"))
+
