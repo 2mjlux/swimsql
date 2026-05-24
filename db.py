@@ -615,6 +615,58 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         return personal_bests
 
 
+def get_performance_by_time_metres(swimmer_id, discipline_metres_id, time_cs):
+    """
+    Retrieve the full performance row(s) for a specific time in a metres pool.
+    Used to get meet, session and notes for a personal best.
+    Multiple rows may be returned if the same time was achieved twice
+    """
+    with get_connection() as conn:
+        query = """
+            SELECT
+                performances_metres.time_cs,
+                performances_metres.date,
+                performances_metres.session,
+                performances_metres.notes,
+                meets.name AS meet,
+                disciplines_metres.name AS discipline
+            FROM performances_metres
+            JOIN meets ON performances_metres.meet_id = meets.id
+            JOIN disciplines_metres ON performances_metres.discipline_metres_id =
+                disciplines_metres.id
+            WHERE performances_metres.swimmer_id = ?
+            AND performances_metres.discipline_metres_id = ?
+            AND performances_metres.time_cs = ?
+        """
+        return conn.execute(query, (swimmer_id, discipline_metres_id, time_cs)).fetchall()
+
+
+def get_performance_by_time_yards(swimmer_id, discipline_yards_id, time_cs):
+    """
+    Retrieve the full performance row(s) for a specific time in a yards pool.
+    Used to get meet, session and notes for a personal best.
+    Multiple rows may be returned if the same time was achieved twice
+    """
+    with get_connection() as conn:
+        query = """
+            SELECT
+                performances_yards.time_cs,
+                performances_yards.date,
+                performances_yards.session,
+                performances_yards.notes,
+                meets.name AS meet,
+                disciplines_yards.name AS discipline
+            FROM performances_yards
+            JOIN meets ON performances_yards.meet_id = meets.id
+            JOIN disciplines_yards ON performances_yards.discipline_yards_id =
+                disciplines_yards.id
+            WHERE performances_yards.swimmer_id = ?
+            AND performances_yards.discipline_yards_id = ?
+            AND performances_yards.time_cs = ?
+        """
+        return conn.execute(query, (swimmer_id, discipline_yards_id, time_cs)).fetchall()
+
+
 # Lookup functions for cli.py
 def list_countries():
     """
