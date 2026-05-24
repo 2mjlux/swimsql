@@ -619,7 +619,7 @@ def get_performance_by_time_metres(swimmer_id, discipline_metres_id, time_cs):
     """
     Retrieve the full performance row(s) for a specific time in a metres pool.
     Used to get meet, session and notes for a personal best.
-    Multiple rows may be returned if the same time was achieved twice
+    Multiple rows may be returned if the same time was achieved twice.
     """
     with get_connection() as conn:
         query = """
@@ -638,14 +638,16 @@ def get_performance_by_time_metres(swimmer_id, discipline_metres_id, time_cs):
             AND performances_metres.discipline_metres_id = ?
             AND performances_metres.time_cs = ?
         """
-        return conn.execute(query, (swimmer_id, discipline_metres_id, time_cs)).fetchall()
+        return conn.execute(
+            query, (swimmer_id, discipline_metres_id, time_cs)
+        ).fetchall()
 
 
 def get_performance_by_time_yards(swimmer_id, discipline_yards_id, time_cs):
     """
     Retrieve the full performance row(s) for a specific time in a yards pool.
     Used to get meet, session and notes for a personal best.
-    Multiple rows may be returned if the same time was achieved twice
+    Multiple rows may be returned if the same time was achieved twice.
     """
     with get_connection() as conn:
         query = """
@@ -664,7 +666,9 @@ def get_performance_by_time_yards(swimmer_id, discipline_yards_id, time_cs):
             AND performances_yards.discipline_yards_id = ?
             AND performances_yards.time_cs = ?
         """
-        return conn.execute(query, (swimmer_id, discipline_yards_id, time_cs)).fetchall()
+        return conn.execute(
+            query, (swimmer_id, discipline_yards_id, time_cs)
+        ).fetchall()
 
 
 # Lookup functions for cli.py
