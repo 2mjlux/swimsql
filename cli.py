@@ -368,3 +368,83 @@ def flow_list_performances():
     ]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
+
+def flow_personal_bests():
+    """
+    List the best performances of a swimmer, with discipline and pool size (for metres only) as optional filters.
+    """
+    print("--- List Personal Bests ---")
+    swimmer = search_from_list(
+        db.list_swimmers(), lambda s: s["name"], "Select swimmer"
+    )
+    if swimmer is None:
+        return
+    swimmer_id = swimmer["id"]
+    units = ["Metres", "Yards"]
+    unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
+    if unit is None:
+        return
+    discipline_metres_id = None
+    discipline_yards_id = None
+    if confirm("Filter by discipline?"):
+        if unit == "Metres":
+            discipline = select_discipline_metres()
+            if discipline is None:
+                return
+            discipline_metres_id = discipline["id"]
+        else:
+            discipline = select_discipline_yards()
+            if discipline is None:
+                return
+            discipline_yards_id = discipline["id"]
+    if unit == "Metres":
+        pool_id = discipline["pool_id"] if discipline_metres_id else None
+        bests = db.get_personal_bests_metres(swimmer_id, discipline_metres_id,
+            pool_id)
+    else:
+        bests = db.get_personal_bests_yards(swimmer_id, discipline_yards_id)
+    if not bests:
+        print("  No performances found.")
+        return
+    rows = []
+    if unit == "Metres":
+        for best in bests:
+            performances = db.get_performance_by_time_metres(
+                swimmer_id,
+                best["discipline_metres_id"],
+                best["best_cs"]
+            )
+            for perf in performances:
+                rows.append([
+                    best["discipline"],
+                    db.cs_to_time(best["best_cs"]),
+                    perf["date"],
+                    perf["session"] or "",
+                    perf["meet"],
+                    perf["notes"] or "",
+                ])
+    else:
+        for best in bests:
+            performances = db.get_performance_by_time_yards(
+                swimmer_id,
+                best["discipline_yards_id"],
+                best["best_cs"]
+            )
+            for perf in performances:
+                rows.append([
+                    best["discipline"],
+                    db.cs_to_time(best["best_cs"]),
+                    perf["date"],
+                    perf["session"] or "",
+                    perf["meet"],
+                    perf["notes"] or "",
+                ])
+    headers = [
+        "Discipline",
+        "Best Time",
+        "Date",
+        "Session",
+        "Meet",
+        "Notes"
+    ]
+    print(tabulate(rows, headers=headers, tablefmt="github"))
