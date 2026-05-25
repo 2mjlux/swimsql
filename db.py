@@ -489,7 +489,7 @@ def add_performance_yards(
 def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=None):
     """
     List a swimmers' performances in a 25, 33 and 50 metres pool.  Possibility to
-    filter by swimmer, discipline and year."
+    filter by swimmer, discipline and year.
     """
     with get_connection() as conn:
         query = """
@@ -505,23 +505,43 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
         """
         params = []
         if swimmer_id is not None:
-            query += " AND swimmer_id = ?"
+            query += " AND performances_metres.swimmer_id = ?"
             params.append(swimmer_id)
         if discipline_metres_id is not None:
-            query += " AND discipline_metres_id = ?"
+            query += " AND performances_metres.discipline_metres_id = ?"
             params.append(discipline_metres_id)
         if year is not None:
-            query += " AND strftime('%Y', date) = ?"
+            query += " AND strftime('%Y', performances_metres.date) = ?"
             params.append(str(year))
-        query += " ORDER BY meets.date_start DESC"
+        query += " ORDER BY performances_metres.date DESC"
         listing = conn.execute(query, params).fetchall()
+        return listing
+
+
+def list_all_performances_metres():
+    """
+    List all swimmers' performances in all metre sized pools.  No filter options.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        disciplines_metres.name AS discipline, performances_metres.time_cs,
+        performances_metres.date, performances_metres.session, performances_metres.notes
+        FROM performances_metres
+        JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
+        JOIN meets ON performances_metres.meet_id = meets.id
+        JOIN disciplines_metres ON performances_metres.discipline_metres_id =
+        disciplines_metres.id
+        ORDER BY swimmers.name, performances_metres.date DESC
+        """
+        listing = conn.execute(query).fetchall()
         return listing
 
 
 def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None):
     """
     List a swimmers' performances in a 25 yards pool. Possibility to filter by
-    swimmer, discipline and year."
+    swimmer, discipline and year.
     """
     with get_connection() as conn:
         query = """
@@ -537,16 +557,36 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
         """
         params = []
         if swimmer_id is not None:
-            query += " AND swimmer_id = ?"
+            query += " AND performances_yards.swimmer_id = ?"
             params.append(swimmer_id)
         if discipline_yards_id is not None:
-            query += " AND discipline_yards_id = ?"
+            query += " AND performances_yards.discipline_yards_id = ?"
             params.append(discipline_yards_id)
         if year is not None:
-            query += " AND strftime('%Y', date) = ?"
+            query += " AND strftime('%Y', performances_yards.date) = ?"
             params.append(str(year))
-        query += " ORDER BY meets.date_start DESC"
+        query += " ORDER BY performances_yards.date DESC"
         listing = conn.execute(query, params).fetchall()
+        return listing
+
+
+def list_all_performances_yards():
+    """
+    List all swimmers' performances in a 25 yards pool.  No filter options.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        disciplines_yards.name AS discipline, performances_yards.time_cs,
+        performances_yards.date, performances_yards.session, performances_yards.notes
+        FROM performances_yards
+        JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
+        JOIN meets ON performances_yards.meet_id = meets.id
+        JOIN disciplines_yards ON performances_yards.discipline_yards_id =
+        disciplines_yards.id
+        ORDER BY swimmers.name, performances_yards.date DESC
+        """
+        listing = conn.execute(query).fetchall()
         return listing
 
 
