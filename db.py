@@ -601,12 +601,11 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
-            meets.date_start AS date
+            performances_metres.date AS date
         FROM performances_metres
         JOIN disciplines_metres ON
         performances_metres.discipline_metres_id = disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
-        JOIN meets ON performances_metres.meet_id = meets.id
         WHERE 1=1
         """
         params = []
@@ -625,6 +624,32 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
         return personal_bests
 
 
+def get_all_personal_bests_metres():
+    """
+    Return all swimmers' best performances in a metre sized pool.
+    No filtering options.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT
+            swimmers.name AS swimmer,
+            disciplines_metres.name AS discipline,
+            MIN(performances_metres.time_cs) AS best_cs,
+            pools.name AS pool,
+            performances_metres.date AS date
+        FROM performances_metres
+        JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
+        JOIN disciplines_metres ON
+        performances_metres.discipline_metres_id = disciplines_metres.id
+        JOIN pools ON disciplines_metres.pool_id = pools.id
+        GROUP BY performances_metres.swimmer_id,
+            performances_metres.discipline_metres_id
+        ORDER BY swimmers.name, pools.name, disciplines_metres.name
+        """
+        all_personal_bests = conn.execute(query).fetchall()
+        return all_personal_bests
+
+
 def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
     """
     Return swimmers' best performances in a 25 yards pool.  Possibility to filter
@@ -635,11 +660,10 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         SELECT
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
-            meets.date_start AS date
+            performances_yards.date AS date
         FROM performances_yards
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
-        JOIN meets ON performances_yards.meet_id = meets.id
         WHERE 1=1
         """
         params = []
@@ -653,6 +677,30 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         query += " ORDER BY disciplines_yards.name"
         personal_bests = conn.execute(query, params).fetchall()
         return personal_bests
+
+
+def get_all_personal_bests_yards():
+    """
+    Return all swimmers' best performances in a 25 yards pool.
+    No filtering options.
+    """
+    with get_connection() as conn:
+        query = """
+        SELECT
+            swimmers.name AS swimmer,
+            disciplines_yards.name AS discipline,
+            MIN(performances_yards.time_cs) AS best_cs,
+            performances_yards.date AS date
+        FROM performances_yards
+        JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
+        JOIN disciplines_yards ON
+        performances_yards.discipline_yards_id = disciplines_yards.id
+        GROUP BY performances_yards.swimmer_id,
+            performances_yards.discipline_yards_id
+        ORDER BY swimmers.name, disciplines_yards.name
+        """
+        all_personal_bests = conn.execute(query).fetchall()
+        return all_personal_bests
 
 
 def get_performance_by_time_metres(swimmer_id, discipline_metres_id, time_cs):
