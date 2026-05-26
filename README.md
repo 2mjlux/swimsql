@@ -1,10 +1,7 @@
 # SwimSQL
 
-&nbsp;
 > ⚠️ This project is currently under active development and is not yet functional.
-> The database layer (`db.py`) is complete. The CLI interface (`cli.py`) is in progress.
-&nbsp;
-&nbsp;
+> `db.py` is complete. `cli.py` is nearly complete. `export.py` and `swimsql.py` are pending.
 
 A command-line tool for tracking swimming competition performances,
 built with Python and SQLite.
@@ -20,7 +17,7 @@ a local database on your machine.
 - Record meets and performances by discipline
 - Filter results by discipline and year
 - View personal bests across all disciplines
-- Export results to XLSX or ODS for sharing
+- Export results to ODS or XLSX for sharing
 
 Disciplines are pre-loaded at first run and cover all standard individual
 events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley)
@@ -35,7 +32,7 @@ SwimSQL follows a strict separation of responsibilities across its modules:
 |---|---|
 | `db.py` | All database interaction: SQL queries, inserts, schema creation, seeding |
 | `cli.py` | All user interaction: menus, prompts, input validation |
-| `export.py` | Export of results to XLSX and ODS formats |
+| `export.py` | Export of results to ODS and XLSX formats |
 | `swimsql.py` | Entry point: launches the application |
 
 No SQL is written outside `db.py`. No user interaction happens outside `cli.py`.
@@ -43,7 +40,7 @@ The modules communicate in one direction only:
 
 ```
 swimsql.py --> cli.py --> db.py --> swimsql.db
-                     --> export.py --> swimsql.xlsx / swimsql.ods
+                     --> export.py --> swimsql.ods / swimsql.xlsx
 ```
 
 ### cli.py in detail
@@ -52,7 +49,10 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
 
 **Helper functions** — reusable building blocks:
 - `prompt()` — ask the user for a single input
+- `prompt_date()` — ask the user for a date in YYYY-MM-DD format
+- `prompt_year()` — ask the user for a year in YYYY format
 - `select_from_list()` — show a numbered list, return the chosen item
+- `search_from_list()` — search a long list by typing first letters
 - `confirm()` — ask a yes/no question
 - `select_discipline_metres()` — guided sub-menu for picking a metres discipline
 - `select_discipline_yards()` — guided sub-menu for picking a yards discipline
@@ -63,7 +63,7 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
 - `flow_add_performance()` — prompts for performance, calls `add_performance_metres()` or `add_performance_yards()`
 - `flow_list_performances()` — asks for filters, displays results via tabulate
 - `flow_personal_bests()` — displays personal bests via tabulate
-- `flow_export()` — generates XLSX/ODS file via `export.py`
+- `flow_export()` — generates ODS/XLSX file via `export.py`
 
 **Main menu** — the `main()` function that ties everything together.
 
@@ -74,6 +74,22 @@ They communicate in one direction:
 ```
 cli.py collects input --> calls db.py functions --> db.py returns data --> cli.py displays it
 ```
+
+
+### export.py in detail
+
+`export.py` generates a complete snapshot of the database in ODS or XLSX
+format. The export contains four sheets:
+
+| Sheet | Contents |
+|---|---|
+| `Performances Metres` | All swimmers' metre-based performances |
+| `Performances Yards` | All swimmers' yard-based performances |
+| `Personal Bests Metres` | Best time per swimmer per metre discipline |
+| `Personal Bests Yards` | Best time per swimmer per yard discipline |
+
+Family members can filter and sort the data using Collabora Online,
+LibreOffice, OpenOffice, or Excel.
 
 
 ## Database schema
@@ -96,9 +112,12 @@ SwimSQL uses a local SQLite database with the following structure:
 
 ### Notes
 
-- Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
-- Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
-- Relay leg times record `start_type` (standing or flying) and `is_mixed_mf` to determine whether a split time is eligible for individual records.
+- Times are stored as integers in **centiseconds** (hundredths of a second).
+  A time of 1:23.45 is stored as 8345.
+- Metres and yards events are stored in separate tables as they represent
+  different measurement systems with different standard distances.
+- Relay leg times record `start_type` (standing or flying) and `is_mixed_mf`
+  to determine whether a split time is eligible for individual records.
 
 ### Relationships (diagram)
 
@@ -182,15 +201,11 @@ You will be presented with a menu:
 
 ### Data storage
 
-SwimSQL stores its database at:
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is
+created automatically on first run. To back up your data, copy this file
+to a safe location. To migrate to a new machine, copy it to the same path
+on the new machine.
 
-```bash
-~/.swimsql/swimsql.db
-```
-
-This folder is created automatically on first run. To back up your data,
-copy this file to a safe location. To migrate to a new machine, copy it
-to the same path on the new machine.
 
 ## License
 
