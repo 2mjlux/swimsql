@@ -59,8 +59,9 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
 
 **Flow functions** — one per menu option:
 - `flow_add_meet()` — prompts for meet details, calls `add_meet()` from `db.py`
-- `flow_add_swimmer()` — prompts for swimmer details, calls `add_swimmer()`
-- `flow_add_performance()` — prompts for performance, calls `add_performance_metres()` or `add_performance_yards()`
+- `flow_add_swimmer()` — prompts for swimmer details, calls `add_swimmer()` from `db.py`
+- `flow_add_club()` — prompts for club details, calls `add_club()` from `db.py`
+- `flow_add_performance()` — prompts for performance, calls `add_performance_metres()` or `add_performance_yards()` from `db.py`
 - `flow_list_performances()` — asks for filters, displays results via tabulate
 - `flow_personal_bests()` — displays personal bests via tabulate
 - `flow_export()` — generates ODS/XLSX file via `export.py`
