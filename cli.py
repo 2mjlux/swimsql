@@ -244,6 +244,26 @@ def flow_add_swimmer():
     print(f"  Swimmer '{name}' successfully added!")
 
 
+def flow_add_club():
+    """
+    Function for the user to add a club.
+    """
+    print("--- Add Club ---")
+    while True:
+        name = prompt("Name of club")
+        if name:
+            break
+        print("  Club's name is required.")
+    country = search_from_list(
+        db.list_countries(), lambda c: c["name"], "Select country"
+    )
+    if country is None:
+        return
+    country_id = country["id"]
+    db.add_club(name, country_id)
+    print(f"  Club '{name}' successfully added!")
+
+
 def flow_add_performance():
     """
     Function for the user to add a swimmer's performance.
@@ -371,7 +391,8 @@ def flow_list_performances():
 
 def flow_personal_bests():
     """
-    List the best performances of a swimmer, with discipline and pool size (for metres only) as optional filters.
+    List the best performances of a swimmer, with discipline and pool size (for metres
+    only) as optional filters.
     """
     print("--- List Personal Bests ---")
     swimmer = search_from_list(
@@ -400,7 +421,7 @@ def flow_personal_bests():
     if unit == "Metres":
         pool_id = discipline["pool_id"] if discipline_metres_id else None
         bests = db.get_personal_bests_metres(swimmer_id, discipline_metres_id,
-            pool_id)
+                                             pool_id)
     else:
         bests = db.get_personal_bests_yards(swimmer_id, discipline_yards_id)
     if not bests:
