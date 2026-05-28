@@ -419,6 +419,18 @@ def add_swimmer(name, date_of_birth, gender, club_id, country_id):
         return cursor.lastrowid
 
 
+def add_club(name, country_id):
+    """
+    Add a club to the clubs table.
+    """
+    club = (name, country_id)
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "INSERT INTO clubs (name, country_id) VALUES (?, ?)", club,
+        )
+        return cursor.lastrowid
+
+
 def list_swimmers():
     """
     List all swimmers ordered by name.
