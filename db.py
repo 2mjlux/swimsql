@@ -536,7 +536,8 @@ def list_all_performances_metres():
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        SELECT swimmers.name AS swimmer, pools.name AS pool, meets.name AS meet,
+        meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
         performances_metres.date, performances_metres.session, performances_metres.notes
         FROM performances_metres
@@ -544,6 +545,7 @@ def list_all_performances_metres():
         JOIN meets ON performances_metres.meet_id = meets.id
         JOIN disciplines_metres ON performances_metres.discipline_metres_id =
         disciplines_metres.id
+        JOIN pools ON disciplines_metres.pool_id = pools.id
         ORDER BY swimmers.name, performances_metres.date DESC
         """
         listing = conn.execute(query).fetchall()
