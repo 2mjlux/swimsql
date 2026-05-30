@@ -23,9 +23,38 @@ HEADERS_PERFORMANCES_YARDS = [
     "Discipline", "Time", "Date", "Session", "Notes"
 ]
 
-HEADERS_PERSONAL_BESTS = [
+HEADERS_PERSONAL_BESTS_METRES = [
+    "Swimmer", "Discipline", "Pool", "Best Time", "Date"
+]
+
+HEADERS_PERSONAL_BESTS_YARDS = [
     "Swimmer", "Discipline", "Best Time", "Date"
 ]
+
+
+def _add_sheet_ods(doc, sheet_name, headers, rows):
+    """
+    Add a sheet to an ODS document with bold headers and data rows.
+    """
+    sheet = Table(name=sheet_name)
+    doc.spreadsheet.addElement(sheet)
+
+    # Header row
+    header_row = TableRow()
+    for header in headers:
+        cell = TableCell()
+        cell.addElement(P(text=header))
+        header_row.addElement(cell)
+    sheet.addElement(header_row)
+
+    # Data rows
+    for row in rows:
+        data_row = TableRow()
+        for value in row:
+            cell = TableCell()
+            cell.addElement(P(text=str(value) if value is not None else ""))
+            data_row.addElement(cell)
+        sheet.addElement(data_row)
 
 
 def _get_export_data():
@@ -47,7 +76,70 @@ def export_ods(filepath):
     Four sheets: Performances Metres, Performances Yards,
     Personal Bests Metres, Personal Bests Yards.
     """
-    pass
+    doc = OpenDocumentSpreadsheet()  # create the document
+    data = _get_export_data()  # fetch the data
+
+    # call _add_sheet_ods() four times - once per sheet
+    # Sheet 1 - Performance Metres
+    rows = [
+        [
+            row["swimmer"],
+            row["pool"],
+            row["meet"],
+            row["date_start"],
+            row["discipline"],
+            db.cs_to_time(row["time_cs"]),
+            row["date"],
+            row["session"] or "",
+            row["notes"] or "",
+        ]
+        for row in data["performances_metres"]
+    ]
+    _add_sheet_ods(doc, "Performances Metres", HEADERS_PERFORMANCES_METRES, rows)
+
+    # Sheet 2 - Performance Yards
+    rows = [
+        [
+            row["swimmer"],
+            row["meet"],
+            row["date_start"],
+            row["discipline"],
+            db.cs_to_time(row["time_cs"]),
+            row["date"],
+            row["session"] or "",
+            row["notes"] or "",
+        ]
+        for row in data["performances_yards"]
+    ]
+    _add_sheet_ods(doc, "Performances Yards", HEADERS_PERFORMANCES_YARDS, rows)
+
+    # Sheet 3 - Personal Bests Metres
+    rows = [
+        [
+            row["swimmer"],
+            row["discipline"],
+            row["pool"],
+            db.cs_to_time(row["best_cs"]),
+            row["date"],
+        ]
+        for row in data["personal_bests_metres"]
+    ]
+    _add_sheet_ods(doc, "Personal Bests Metres", HEADERS_PERSONAL_BESTS_METRES, rows)
+
+    # Sheet 4 - Personal Bests Yards
+    rows = [
+        [
+            row["swimmer"],
+            row["discipline"],
+            db.cs_to_time(row["best_cs"]),
+            row["date"],
+        ]
+        for row in data["personal_bests_yards"]
+    ]
+    _add_sheet_ods(doc, "Personal Bests Yards", HEADERS_PERSONAL_BESTS_YARDS, rows)
+
+    # save the document
+    doc.save(filepath)
 
 
 def export_xlsx(filepath):
