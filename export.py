@@ -57,6 +57,22 @@ def _add_sheet_ods(doc, sheet_name, headers, rows):
         sheet.addElement(data_row)
 
 
+def _add_sheet_xlsx(wb, sheet_name, headers, rows):
+    """
+    Add a sheet to an XLSX workbook with bold headers and data rows.
+    """
+    ws = wb.create_sheet(title=sheet_name)
+
+    # Bold header row
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+
+    # Data rows
+    for row in rows:
+        ws.append(row)
+
+
 def _get_export_data():
     """
     Fetch all data needed for export from db.py.
@@ -148,4 +164,68 @@ def export_xlsx(filepath):
     Four sheets: Performances Metres, Performances Yards,
     Personal Bests Metres, Personal Bests Yards.
     """
-    pass
+    wb = Workbook()  # create the workbook
+    wb.remove(wb.active)  # remove empty default sheet before adding ours
+    data = _get_export_data()  # fetch the data
+
+    # call _add_sheet_xlsx() four times - once per sheet
+    # Sheet 1 - Performance Metres
+    rows = [
+        [
+            row["swimmer"],
+            row["pool"],
+            row["meet"],
+            row["date_start"],
+            row["discipline"],
+            db.cs_to_time(row["time_cs"]),
+            row["date"],
+            row["session"] or "",
+            row["notes"] or "",
+        ]
+        for row in data["performances_metres"]
+    ]
+    _add_sheet_xlsx(wb, "Performances Metres", HEADERS_PERFORMANCES_METRES, rows)
+
+    # Sheet 2 - Performance Yards
+    rows = [
+        [
+            row["swimmer"],
+            row["meet"],
+            row["date_start"],
+            row["discipline"],
+            db.cs_to_time(row["time_cs"]),
+            row["date"],
+            row["session"] or "",
+            row["notes"] or "",
+        ]
+        for row in data["performances_yards"]
+    ]
+    _add_sheet_xlsx(wb, "Performances Yards", HEADERS_PERFORMANCES_YARDS, rows)
+
+    # Sheet 3 - Personal Bests Metres
+    rows = [
+        [
+            row["swimmer"],
+            row["discipline"],
+            row["pool"],
+            db.cs_to_time(row["best_cs"]),
+            row["date"],
+        ]
+        for row in data["personal_bests_metres"]
+    ]
+    _add_sheet_xlsx(wb, "Personal Bests Metres", HEADERS_PERSONAL_BESTS_METRES, rows)
+
+    # Sheet 4 - Personal Bests Yards
+    rows = [
+        [
+            row["swimmer"],
+            row["discipline"],
+            db.cs_to_time(row["best_cs"]),
+            row["date"],
+        ]
+        for row in data["personal_bests_yards"]
+    ]
+    _add_sheet_xlsx(wb, "Personal Bests Yards", HEADERS_PERSONAL_BESTS_YARDS, rows)
+
+    # save the document
+    wb.save(filepath)
