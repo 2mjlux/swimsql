@@ -148,10 +148,9 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 ### Additional detail relay leg fields
 
 Each relay leg records:
-- `leg_number`  -- position in the relay (1, 2, 3 or 4)
+- `leg_number`  -- position in the relay (1-4); leg 1 = standing start, legs 2-4 = flying start
 - `stroke`      -- stroke swum (especially important for medley relays)
 - `time_cs`     -- individual leg time in centiseconds
-- `start_type`  -- 'standing' (leg 1) or 'flying' (legs 2, 3, 4)
 - `is_mixed_mf` -- 1 if mixed gender relay (split times cannot count for records)
 
 

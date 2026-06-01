@@ -7,7 +7,7 @@ import sqlite3
 import pycountry
 from pathlib import Path
 
-DB_PATH = Path.home() / ".swimsql" / "swimsql.db"
+DB_PATH = Path.home() / ".swimsql" / "swimsql.db"  # module-level constant
 
 
 # Setup
@@ -150,10 +150,9 @@ def init_db():
                 id INTEGER PRIMARY KEY,
                 performance_metres_id INTEGER NOT NULL, -- time of team
                 swimmer_id INTEGER NOT NULL,
-                leg_number INTEGER NOT NULL,
+                leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
                 stroke TEXT NOT NULL,
                 time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
-                start_type TEXT NOT NULL,   -- 'standing' or 'flying'
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
                 CONSTRAINT fk_relay_legs_metres_performances_metres
                     FOREIGN KEY(performance_metres_id)
@@ -167,10 +166,9 @@ def init_db():
                 id INTEGER PRIMARY KEY,
                 performance_yards_id INTEGER NOT NULL, -- time of team
                 swimmer_id INTEGER NOT NULL,
-                leg_number INTEGER NOT NULL,
+                leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
                 stroke TEXT NOT NULL,
                 time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
-                start_type TEXT NOT NULL,   -- 'standing' or 'flying'
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
                 CONSTRAINT fk_relay_legs_yards_performances_yards
                     FOREIGN KEY(performance_yards_id)
