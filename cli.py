@@ -4,8 +4,10 @@
 # Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
 
 import db
+import export
 import sys
 from tabulate import tabulate
+from pathlib import Path
 
 
 # Helper functions
@@ -469,3 +471,28 @@ def flow_personal_bests():
         "Notes"
     ]
     print(tabulate(rows, headers=headers, tablefmt="github"))
+
+
+def flow_export():
+    """
+    Export the data of the SwimSQL database into sheets of a spreadsheet software.
+    The user can choose between open document format (ods) or Microsoft Excel (xlsx).
+    The sheets created are:
+    - Performances Metres
+    - Performances Yards
+    - Personal Bests Metres
+    - Personal Bests Yards
+    """
+    print("--- Export ---")
+    items = ["Open Document Format (ODS)", "Microsoft Excel (XLSX)"]
+    title = "Select export format (file will be saved to your home directory):"
+    format = select_from_list(items, lambda e: e, title)
+    if format is None:
+        return  # export cancelled
+    if format == "Open Document Format (ODS)":
+        filepath = Path.home() / "swimsql_export.ods"
+        export.export_ods(filepath)
+    else:
+        filepath = Path.home() / "swimsql_export.xlsx"
+        export.export_xlsx(filepath)
+    print(f"  Export saved to: {filepath}")
