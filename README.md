@@ -148,10 +148,11 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 ### Additional detail relay leg fields
 
 Each relay leg records:
-- `leg_number`  -- position in the relay (1-4); leg 1 = standing start, legs 2-4 = flying start
+- `leg_number`  -- position in the relay (1-4); leg 1 = standing start (time may count as individual record), legs 2-4 = flying start (time cannot count for individual records)
 - `stroke`      -- stroke swum (especially important for medley relays)
 - `time_cs`     -- individual leg time in centiseconds
-- `is_mixed_mf` -- 1 if mixed gender relay (split times cannot count for records)
+- `is_mixed_mf` -- 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record (standing start). Leg 1 of a mixed relay cannot count for records under European Aquatics rules.
+  Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
 
 
 ## Requirements
