@@ -114,6 +114,9 @@ def init_db():
                 time_cs INTEGER NOT NULL,    -- stored in centiseconds
                 date TEXT NOT NULL, -- stored as YYYY-MM-DD
                 session TEXT,   -- AM or PM, optional
+                is_relay_leg INTEGER NOT NULL DEFAULT 0,  -- 1 if swum during a relay
+                leg_number INTEGER,  -- 1-4, NULL if not a relay leg
+                is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
                 notes TEXT,  -- optional
                 CONSTRAINT fk_performances_metres_swimmers
                     FOREIGN KEY(swimmer_id)
@@ -134,6 +137,9 @@ def init_db():
                 time_cs INTEGER NOT NULL,    -- stored in centiseconds
                 date TEXT NOT NULL, -- stored as YYYY-MM-DD
                 session TEXT,   -- AM or PM, optional
+                is_relay_leg INTEGER NOT NULL DEFAULT 0,  -- 1 if swum during a relay
+                leg_number INTEGER,  -- 1-4, NULL if not a relay leg
+                is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
                 notes TEXT,  -- optional
                 CONSTRAINT fk_performances_yards_swimmers
                     FOREIGN KEY(swimmer_id)
@@ -146,37 +152,39 @@ def init_db():
                     REFERENCES disciplines_yards(id)
              );
 
-             CREATE TABLE IF NOT EXISTS relay_legs_metres(
-                id INTEGER PRIMARY KEY,
-                performance_metres_id INTEGER NOT NULL, -- time of team
-                swimmer_id INTEGER NOT NULL,
-                leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
-                stroke TEXT NOT NULL,
-                time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
-                is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
-                CONSTRAINT fk_relay_legs_metres_performances_metres
-                    FOREIGN KEY(performance_metres_id)
-                    REFERENCES performances_metres(id),
-                CONSTRAINT fk_relay_legs_metres_swimmer
-                    FOREIGN KEY(swimmer_id)
-                    REFERENCES swimmers(id)
-            );
+            -- relay_legs_metres and relay_legs_yards are implemented in v2
+            -- see README known limitations section
+            -- CREATE TABLE IF NOT EXISTS relay_legs_metres(
+                -- id INTEGER PRIMARY KEY,
+                -- performance_metres_id INTEGER NOT NULL, -- time of team
+                -- swimmer_id INTEGER NOT NULL,
+                -- leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
+                -- stroke TEXT NOT NULL,
+                -- time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
+                -- is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
+                -- CONSTRAINT fk_relay_legs_metres_performances_metres
+                    -- FOREIGN KEY(performance_metres_id)
+                    -- REFERENCES performances_metres(id),
+                -- CONSTRAINT fk_relay_legs_metres_swimmer
+                    -- FOREIGN KEY(swimmer_id)
+                    -- REFERENCES swimmers(id)
+            -- );
 
-            CREATE TABLE IF NOT EXISTS relay_legs_yards(
-                id INTEGER PRIMARY KEY,
-                performance_yards_id INTEGER NOT NULL, -- time of team
-                swimmer_id INTEGER NOT NULL,
-                leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
-                stroke TEXT NOT NULL,
-                time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
-                is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
-                CONSTRAINT fk_relay_legs_yards_performances_yards
-                    FOREIGN KEY(performance_yards_id)
-                    REFERENCES performances_yards(id),
-                CONSTRAINT fk_relay_legs_yards_swimmer
-                    FOREIGN KEY(swimmer_id)
-                    REFERENCES swimmers(id)
-            );
+            -- CREATE TABLE IF NOT EXISTS relay_legs_yards(
+                -- id INTEGER PRIMARY KEY,
+                -- performance_yards_id INTEGER NOT NULL, -- time of team
+                -- swimmer_id INTEGER NOT NULL,
+                -- leg_number INTEGER NOT NULL,  -- 1=standing start, 2-4=flying start
+                -- stroke TEXT NOT NULL,
+                -- time_cs INTEGER NOT NULL,  -- time of individual swimmer's leg
+                -- is_mixed_mf INTEGER NOT NULL DEFAULT 0,    -- gender M/F
+                -- CONSTRAINT fk_relay_legs_yards_performances_yards
+                    -- FOREIGN KEY(performance_yards_id)
+                    -- REFERENCES performances_yards(id),
+                -- CONSTRAINT fk_relay_legs_yards_swimmer
+                    -- FOREIGN KEY(swimmer_id)
+                    -- REFERENCES swimmers(id)
+            -- );
 
         """)
         _seed_pools(conn)
@@ -447,7 +455,8 @@ def list_swimmers():
 
 # Performances
 def add_performance_metres(
-    swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None, notes=None
+    swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None,
+    is_relay_leg=0, leg_number=None, is_mixed_mf=0, notes=None
 ):
     """
     Add a swimmer's performance to the performances_metres table.
@@ -459,20 +468,25 @@ def add_performance_metres(
         time_cs,
         date,
         session,
+        is_relay_leg,
+        leg_number,
+        is_mixed_mf,
         notes,
     )
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO performances_metres (swimmer_id, meet_id,
-            discipline_metres_id, time_cs, date, session, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            discipline_metres_id, time_cs, date, session, is_relay_leg, leg_number,
+            is_mixed_mf, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             performance,
         )
         return cursor.lastrowid
 
 
 def add_performance_yards(
-    swimmer_id, meet_id, discipline_yards_id, time_cs, date, session=None, notes=None
+    swimmer_id, meet_id, discipline_yards_id, time_cs, date, session=None,
+    is_relay_leg=0, leg_number=None, is_mixed_mf=0, notes=None
 ):
     """
     Add a swimmer's performance to the performances_yards table.
@@ -484,13 +498,17 @@ def add_performance_yards(
         time_cs,
         date,
         session,
+        is_relay_leg,
+        leg_number,
+        is_mixed_mf,
         notes,
     )
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO performances_yards (swimmer_id, meet_id,
-            discipline_yards_id, time_cs, date, session, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            discipline_yards_id, time_cs, date, session, is_relay_leg, leg_number,
+            is_mixed_mf, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             performance,
         )
         return cursor.lastrowid
