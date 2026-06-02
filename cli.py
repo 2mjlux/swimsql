@@ -291,6 +291,24 @@ def flow_add_performance():
         if discipline is None:
             return
         discipline_yards_id = discipline["id"]
+
+    # relay specific code
+    is_relay_leg = 0
+    leg_number = None
+    is_mixed_mf = 0
+    if discipline["is_relay"]:
+        if confirm("Are you recording an individual relay leg time?"):
+            is_relay_leg = 1
+            # ask leg number
+            while True:
+                leg = prompt("Leg number (1-4)")
+                if leg and leg.isdigit() and 1 <= int(leg) <= 4:
+                    leg_number = int(leg)
+                    break
+                print("  Please enter a number between 1 and 4.")
+            # ask mixed gender
+            is_mixed_mf = 1 if confirm("Is this a mixed gender relay?") else 0
+
     meet = search_from_list(
         db.list_meets(), lambda m: f"{m['date_start']} - {m['name']}", "Select Meet"
     )
@@ -320,11 +338,13 @@ def flow_add_performance():
     notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
-            swimmer_id, meet_id, discipline_metres_id, time_cs, date, session, notes
+            swimmer_id, meet_id, discipline_metres_id, time_cs, date, session,
+            is_relay_leg, leg_number, is_mixed_mf, notes
         )
     else:
         db.add_performance_yards(
-            swimmer_id, meet_id, discipline_yards_id, time_cs, date, session, notes
+            swimmer_id, meet_id, discipline_yards_id, time_cs, date, session,
+            is_relay_leg, leg_number, is_mixed_mf, notes
         )
     print(f"  Performance {time_str} successfully added!")
 
