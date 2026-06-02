@@ -159,9 +159,7 @@ SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
 - Delete a swimmer, meet, club, or performance
 
 **Relay team breakdown (v2)**
-- Complete relay team breakdown (recording all four swimmers' leg times
-  linked to one team result) is designed but deferred to v2.
-  Individual relay leg times can be recorded via the performances tables.
+- Complete relay team breakdown (recording all four swimmers' leg times linked to one team result) is designed but deferred to v2. Individual relay leg times can be recorded via the performances tables.
 
 
 ## Requirements
