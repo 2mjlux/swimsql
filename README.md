@@ -1,17 +1,14 @@
 # SwimSQL
 
 > ⚠️ This project is currently under active development and is not yet functional.
-> `db.py` is complete. `cli.py` is nearly complete. `export.py` and `swimsql.py` are pending.
+> `db.py` and `export.py` are complete. `cli.py` is nearly complete. `swimsql.py` is pending.
 
-A command-line tool for tracking swimming competition performances,
-built with Python and SQLite.
+A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
 
 ## What it does
 
-SwimSQL lets you record and consult a swimmer's competition results
-from the terminal. No internet connection, no account, no server - just
-a local database on your machine.
+SwimSQL lets you record and consult a swimmer's competition results from the terminal. No internet connection, no account, no server - just a local database on your machine.
 
 **Features:**
 - Record meets and performances by discipline
@@ -19,9 +16,7 @@ a local database on your machine.
 - View personal bests across all disciplines
 - Export results to ODS or XLSX for sharing
 
-Disciplines are pre-loaded at first run and cover all standard individual
-events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley)
-in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
+Disciplines are pre-loaded at first run and cover all standard individual events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley) in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
 
 
 ## Architecture
@@ -106,19 +101,16 @@ SwimSQL uses a local SQLite database with the following structure:
 | `disciplines_metres` | Metre-based events (stroke, distance, pool), pre-seeded at first run |
 | `disciplines_yards` | Yard-based events (stroke, distance), pre-seeded at first run |
 | `meets` | Competitions (name, start and end date, location, country) |
-| `performances_metres` | Metre-based results linking swimmer, discipline, meet, date, session and time |
-| `performances_yards` | Yard-based results linking swimmer, discipline, meet, date, session and time |
-| `relay_legs_metres` | Individual leg times within a metre-based relay |
-| `relay_legs_yards` | Individual leg times within a yard-based relay |
+| `performances_metres` | Metre-based results linking swimmer, discipline, meet, date, session, time and optional relay leg details |
+| `performances_yards` | Yard-based results linking swimmer, discipline, meet, date, session, time and optional relay leg details |
+| `relay_legs_metres` | Individual leg times within a metre-based relay (v2, not yet implemented) |
+| `relay_legs_yards` | Individual leg times within a yard-based relay (v2, not yet implemented) |
 
 ### Notes
 
-- Times are stored as integers in **centiseconds** (hundredths of a second).
-  A time of 1:23.45 is stored as 8345.
-- Metres and yards events are stored in separate tables as they represent
-  different measurement systems with different standard distances.
-- Relay leg times record `start_type` (standing or flying) and `is_mixed_mf`
-  to determine whether a split time is eligible for individual records.
+- Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
+- Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
+- Individual relay leg times are recorded directly in `performances_metres` and `performances_yards` with `is_relay_leg`, `leg_number` and `is_mixed_mf` fields.
 
 ### Relationships (diagram)
 
@@ -131,6 +123,7 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
                              +----------+----------+
                              |                     |
                     relay_legs_metres       relay_legs_yards
+                    (commented out)         (commented out)
 ```
 
 ### Relationships (prose)
@@ -142,17 +135,36 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 - `performances_metres` link a `swimmer`, `discipline_metres`, and `meet`
 - `performances_yards` link a `swimmer`, `discipline_yards`, and `meet`
 - `meets` take place in a `country`
-- `relay_legs_metres` link individual leg times to a `performances_metres` team result and a `swimmer`
-- `relay_legs_yards` link individual leg times to a `performances_yards` team result and a `swimmer`
+- `relay_legs_metres` link individual leg times to a `performances_metres` team result and a `swimmer` (v2, not yet implemented)
+- `relay_legs_yards` link individual leg times to a `performances_yards` team result and a `swimmer` (v2, not yet implemented)
 
-### Additional detail relay leg fields
+### Relay leg fields in performances tables
 
-Each relay leg records:
-- `leg_number`  -- position in the relay (1-4); leg 1 = standing start (time may count as individual record), legs 2-4 = flying start (time cannot count for individual records)
-- `stroke`      -- stroke swum (especially important for medley relays)
-- `time_cs`     -- individual leg time in centiseconds
-- `is_mixed_mf` -- 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record (standing start). Leg 1 of a mixed relay cannot count for records under European Aquatics rules.
-  Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
+When recording an individual relay leg time, the following additional fields are populated in `performances_metres` or `performances_yards`:
+
+- `is_relay_leg` -- 1 if this time was swum during a relay leg
+- `leg_number`   -- position in the relay (1-4); leg 1 = standing start (time may count as individual record), legs 2-4 = flying start (time cannot count for individual records)
+- `is_mixed_mf`  -- 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record. Leg 1 of a mixed relay cannot count for records under European Aquatics rules. Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
+
+
+## Known limitations and planned features
+
+### Version 1.0.0
+SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
+
+**Update and Delete (v1.1.0)**
+- Edit a swimmer's club, country, or name
+- Edit a meet's name, dates, or location
+- Edit a performance's time, date, session, or notes
+- Delete a swimmer, meet, club, or performance
+
+**Relay team breakdown (v2)**
+- Complete relay team breakdown (recording all four swimmers' leg times
+  linked to one team result) is designed but deferred to v2.
+  Individual relay leg times can be recorded via the performances tables.
+
+**PyInstaller packaging (planned)**
+- Packaging as a standalone executable for distribution to other parents.
 
 
 ## Requirements
@@ -202,18 +214,13 @@ You will be presented with a menu:
 
 ### Data storage
 
-SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is
-created automatically on first run. To back up your data, copy this file
-to a safe location. To migrate to a new machine, copy it to the same path
-on the new machine.
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run. To back up your data, copy this file to a safe location. To migrate to a new machine, copy it to the same path on the new machine.
 
 
 ## License
 
-The SwimSQL project is licensed under the
-[Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+The SwimSQL project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
 
-You are free to use, modify, and distribute this software, provided that
-any modifications to the original files are released under the same licence.
+You are free to use, modify, and distribute this software, provided that any modifications to the original files are released under the same licence.
 
 Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
