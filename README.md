@@ -163,9 +163,6 @@ SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
   linked to one team result) is designed but deferred to v2.
   Individual relay leg times can be recorded via the performances tables.
 
-**PyInstaller packaging (planned)**
-- Packaging as a standalone executable for distribution to other parents.
-
 
 ## Requirements
 
