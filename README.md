@@ -1,7 +1,7 @@
 # SwimSQL
 
 > ⚠️ This project is currently under active development and is not yet functional.
-> `db.py` and `export.py` are complete. `cli.py` is nearly complete. `swimsql.py` is pending.
+> All modules are written. First end-to-end test pending.
 
 A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
@@ -123,7 +123,7 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
                              +----------+----------+
                              |                     |
                     relay_legs_metres       relay_legs_yards
-                    (commented out)         (commented out)
+                          (commented out - planned v2)
 ```
 
 ### Relationships (prose)
@@ -203,9 +203,20 @@ Run the application:
 python swimsql.py
 ```
 
-You will be presented with a menu:
+You will be presented with a welcome screen followed by the main menu:
 
-[to be completed]
+=== SwimSQL v1.0.0 ===
+
+1. Add club
+2. Add swimmer
+3. Add meet
+4. Add performance
+5. List performances
+6. Personal bests
+7. Export
+0. Quit
+
+Type the number of your choice and follow the prompts.
 
 ### Data storage
 
