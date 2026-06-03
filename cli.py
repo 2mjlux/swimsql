@@ -58,9 +58,7 @@ def prompt_year(label, optional=False):
     """
     while True:
         if optional:
-            year = input(
-                f"{label} (YYYY, optional - press Enter to skip):"
-            ).strip()
+            year = input(f"{label} (YYYY, optional - press Enter to skip):").strip()
             if not year:
                 return None
         else:
@@ -222,18 +220,33 @@ def flow_add_swimmer():
     Function for the user to add a swimmer.
     """
     print("--- Add Swimmer ---")
+    # name
     while True:
-        name = prompt("Name of swimmer")
-        if name:
+        first_name = prompt("First name")
+        if first_name:
             break
-        print("  Swimmer's name is required.")
+        print("  First name is required.")
+
+    middle_name = prompt("Middle name", optional=True)
+
+    while True:
+        last_name = prompt("Last name")
+        if last_name:
+            break
+        print("  Last name is required.")
+
+    # DOB
     date_of_birth = prompt_date("Date of birth")
+
+    # gender
     while True:
         gender = prompt("Gender of swimmer (enter M or F)")
         if gender and gender.upper() in ("M", "F"):
             gender = gender.upper()
             break
         print("  Please enter M or F.")
+
+    # club
     clubs = db.list_clubs()
     if not clubs:
         print("  No clubs found. You must add a club before adding a swimmer.")
@@ -248,14 +261,23 @@ def flow_add_swimmer():
     if club is None:
         return
     club_id = club["id"]
+
+    # nationality
     country = search_from_list(
         db.list_countries(), lambda c: c["name"], "Select country (nationality)"
     )
     if country is None:
         return
     country_id = country["id"]
-    db.add_swimmer(name, date_of_birth, gender, club_id, country_id)
-    print(f"  Swimmer '{name}' successfully added!")
+
+    # call
+    db.add_swimmer(
+        first_name, middle_name, last_name, date_of_birth, gender, club_id, country_id
+    )
+
+    # confirmation message
+    display_name = f"{first_name} {middle_name + ' ' if middle_name else ''}{last_name}"
+    print(f"  Swimmer '{display_name}' successfully added!")
 
 
 def flow_add_club():
@@ -350,13 +372,29 @@ def flow_add_performance():
     notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
-            swimmer_id, meet_id, discipline_metres_id, time_cs, date, session,
-            is_relay_leg, leg_number, is_mixed_mf, notes
+            swimmer_id,
+            meet_id,
+            discipline_metres_id,
+            time_cs,
+            date,
+            session,
+            is_relay_leg,
+            leg_number,
+            is_mixed_mf,
+            notes,
         )
     else:
         db.add_performance_yards(
-            swimmer_id, meet_id, discipline_yards_id, time_cs, date, session,
-            is_relay_leg, leg_number, is_mixed_mf, notes
+            swimmer_id,
+            meet_id,
+            discipline_yards_id,
+            time_cs,
+            date,
+            session,
+            is_relay_leg,
+            leg_number,
+            is_mixed_mf,
+            notes,
         )
     print(f"  Performance {time_str} successfully added!")
 
@@ -411,15 +449,7 @@ def flow_list_performances():
         ]
         for r in results
     ]
-    headers = [
-        "Swimmer",
-        "Meet",
-        "Date",
-        "Discipline",
-        "Time",
-        "Session",
-        "Notes"
-    ]
+    headers = ["Swimmer", "Meet", "Date", "Discipline", "Time", "Session", "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
@@ -454,8 +484,7 @@ def flow_personal_bests():
             discipline_yards_id = discipline["id"]
     if unit == "Metres":
         pool_id = discipline["pool_id"] if discipline_metres_id else None
-        bests = db.get_personal_bests_metres(swimmer_id, discipline_metres_id,
-                                             pool_id)
+        bests = db.get_personal_bests_metres(swimmer_id, discipline_metres_id, pool_id)
     else:
         bests = db.get_personal_bests_yards(swimmer_id, discipline_yards_id)
     if not bests:
@@ -465,43 +494,36 @@ def flow_personal_bests():
     if unit == "Metres":
         for best in bests:
             performances = db.get_performance_by_time_metres(
-                swimmer_id,
-                best["discipline_metres_id"],
-                best["best_cs"]
+                swimmer_id, best["discipline_metres_id"], best["best_cs"]
             )
             for perf in performances:
-                rows.append([
-                    best["discipline"],
-                    db.cs_to_time(best["best_cs"]),
-                    perf["date"],
-                    perf["session"] or "",
-                    perf["meet"],
-                    perf["notes"] or "",
-                ])
+                rows.append(
+                    [
+                        best["discipline"],
+                        db.cs_to_time(best["best_cs"]),
+                        perf["date"],
+                        perf["session"] or "",
+                        perf["meet"],
+                        perf["notes"] or "",
+                    ]
+                )
     else:
         for best in bests:
             performances = db.get_performance_by_time_yards(
-                swimmer_id,
-                best["discipline_yards_id"],
-                best["best_cs"]
+                swimmer_id, best["discipline_yards_id"], best["best_cs"]
             )
             for perf in performances:
-                rows.append([
-                    best["discipline"],
-                    db.cs_to_time(best["best_cs"]),
-                    perf["date"],
-                    perf["session"] or "",
-                    perf["meet"],
-                    perf["notes"] or "",
-                ])
-    headers = [
-        "Discipline",
-        "Best Time",
-        "Date",
-        "Session",
-        "Meet",
-        "Notes"
-    ]
+                rows.append(
+                    [
+                        best["discipline"],
+                        db.cs_to_time(best["best_cs"]),
+                        perf["date"],
+                        perf["session"] or "",
+                        perf["meet"],
+                        perf["notes"] or "",
+                    ]
+                )
+    headers = ["Discipline", "Best Time", "Date", "Session", "Meet", "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
