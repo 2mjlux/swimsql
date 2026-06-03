@@ -234,7 +234,17 @@ def flow_add_swimmer():
             gender = gender.upper()
             break
         print("  Please enter M or F.")
-    club = search_from_list(db.list_clubs(), lambda cl: cl["name"], "Select club")
+    clubs = db.list_clubs()
+    if not clubs:
+        print("  No clubs found. You must add a club before adding a swimmer.")
+        if confirm("  Would you like to add a club now?"):
+            flow_add_club()
+            clubs = db.list_clubs()
+            if not clubs:
+                return  # user cancelled club addition
+        else:
+            return
+    club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
     if club is None:
         return
     club_id = club["id"]
