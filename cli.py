@@ -8,6 +8,7 @@ import export
 import sys
 from tabulate import tabulate
 from pathlib import Path
+from datetime import datetime
 
 
 # Helper functions
@@ -505,15 +506,16 @@ def flow_export():
     - Personal Bests Yards
     """
     print("--- Export ---")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     items = ["Open Document Format (ODS)", "Microsoft Excel (XLSX)"]
     title = "Select export format (file will be saved to your home directory):"
-    format = select_from_list(items, lambda e: e, title)
-    if format is None:
+    export_format = select_from_list(items, lambda e: e, title)
+    if export_format is None:
         return  # export cancelled
-    if format == "Open Document Format (ODS)":
-        filepath = Path.home() / "swimsql_export.ods"
+    if export_format == "Open Document Format (ODS)":
+        filepath = Path.home() / f"{timestamp}_swimsql_export.ods"
         export.export_ods(filepath)
     else:
-        filepath = Path.home() / "swimsql_export.xlsx"
+        filepath = Path.home() / f"{timestamp}_swimsql_export.xlsx"
         export.export_xlsx(filepath)
     print(f"  Export saved to: {filepath}")
