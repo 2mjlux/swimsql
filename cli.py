@@ -97,19 +97,20 @@ def select_from_list(items, label_fn, title):
 
 def search_from_list(items, label_fn, title):
     """
-    Display a filtered list of items corresponding to the first letter(s) typed by the
-    user.  Return the item the user picks.  Returns None if the user cancels with 0."
+    Display a filtered list of items containing letter(s) typed by the user.  Return
+    the item the user picks.  Returns None if the user cancels with 0."
     """
     print(title)
     print("  0. Cancel")
     while True:
-        search = input("Enter the first letter(s): ").strip().lower()
+        search = input("Enter letters to search: ").strip().lower()
         if search == "0":
             return None  # selection cancelled
         filtered = [item for item in items if search in label_fn(item).lower()]
         if not filtered:
-            print("No item starting with the letter(s) typed. Try again.")
+            print("No items containing those letter(s). Try again.")
         elif len(filtered) == 1:
+            print(f"  Selected: {label_fn(filtered[0])}")
             return filtered[0]
         else:
             return select_from_list(filtered, label_fn, title)
