@@ -4,6 +4,7 @@
 # Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
 
 import sys
+import os
 import db
 import cli
 
@@ -50,9 +51,11 @@ MENU = """
 
 
 def main():
+    os.system("clear")
     db.init_db()
     print(WELCOME)
     input("  Press Enter to continue...")
+    os.system("clear")  # clear again before showing menu
 
     actions = {
         "1": cli.flow_add_club,
