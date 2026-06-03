@@ -1,7 +1,7 @@
 # SwimSQL
 
-> ⚠️ This project is currently under active development and is not yet functional.
-> All modules are written. First end-to-end test pending.
+> ⚠️ This project is currently under active development.
+> All modules are written. Testing and bug fixing in progress.
 
 A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
@@ -96,7 +96,7 @@ SwimSQL uses a local SQLite database with the following structure:
 |---|---|
 | `countries` | Reference table of countries (ISO 3166-1 alpha-3 codes) |
 | `clubs` | Swimming clubs, linked to a country |
-| `swimmers` | Swimmers, linked to a club and a nationality |
+| `swimmers` | Swimmers (first, middle, last name), linked to a club and a nationality |
 | `pools` | Pool types (length and unit: metres or yards) |
 | `disciplines_metres` | Metre-based events (stroke, distance, pool), pre-seeded at first run |
 | `disciplines_yards` | Yard-based events (stroke, distance), pre-seeded at first run |
