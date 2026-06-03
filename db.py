@@ -93,7 +93,9 @@ def init_db():
 
             CREATE TABLE IF NOT EXISTS swimmers(
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
+                first_name TEXT NOT NULL,
+                middle_name TEXT,  -- optional
+                last_name TEXT NOT NULL,
                 date_of_birth TEXT NOT NULL, -- stored as YYYY-MM-DD
                 gender TEXT NOT NULL,    -- M or F
                 club_id INTEGER NOT NULL,
@@ -411,15 +413,26 @@ def list_meets():
 
 
 # Swimmers
-def add_swimmer(name, date_of_birth, gender, club_id, country_id):
+def add_swimmer(
+    first_name, middle_name, last_name, date_of_birth, gender, club_id, country_id
+):
     """
     Add a swimmer to the swimmers table.
     """
-    swimmer = (name, date_of_birth, gender, club_id, country_id)
+    swimmer = (
+        first_name,
+        middle_name,
+        last_name,
+        date_of_birth,
+        gender,
+        club_id,
+        country_id,
+    )
     with get_connection() as conn:
         cursor = conn.execute(
-            """INSERT INTO swimmers (name, date_of_birth, gender, club_id, country_id)
-        VALUES (?, ?, ?, ?, ?)""",
+            """INSERT INTO swimmers (first_name, middle_name, last_name,
+            date_of_birth, gender, club_id, country_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""",
             swimmer,
         )
         return cursor.lastrowid
@@ -432,7 +445,8 @@ def add_club(name, country_id):
     club = (name, country_id)
     with get_connection() as conn:
         cursor = conn.execute(
-            "INSERT INTO clubs (name, country_id) VALUES (?, ?)", club,
+            "INSERT INTO clubs (name, country_id) VALUES (?, ?)",
+            club,
         )
         return cursor.lastrowid
 
@@ -443,20 +457,30 @@ def list_swimmers():
     """
     with get_connection() as conn:
         listing = conn.execute("""
-            SELECT swimmers.id, swimmers.name, swimmers.date_of_birth,
-                   swimmers.gender, clubs.name AS club, countries.name AS nationality
+            SELECT swimmers.id, swimmers.first_name || ' ' ||
+            COALESCE(swimmers.middle_name || ' ', '') || swimmers.last_name AS name,
+            swimmers.date_of_birth, swimmers.gender, clubs.name AS club,
+            countries.name AS nationality
             FROM swimmers
             JOIN clubs ON swimmers.club_id = clubs.id
             JOIN countries ON swimmers.country_id = countries.id
-            ORDER BY swimmers.name
+            ORDER BY swimmers.last_name, swimmers.first_name
             """).fetchall()
         return listing
 
 
 # Performances
 def add_performance_metres(
-    swimmer_id, meet_id, discipline_metres_id, time_cs, date, session=None,
-    is_relay_leg=0, leg_number=None, is_mixed_mf=0, notes=None
+    swimmer_id,
+    meet_id,
+    discipline_metres_id,
+    time_cs,
+    date,
+    session=None,
+    is_relay_leg=0,
+    leg_number=None,
+    is_mixed_mf=0,
+    notes=None,
 ):
     """
     Add a swimmer's performance to the performances_metres table.
@@ -485,8 +509,16 @@ def add_performance_metres(
 
 
 def add_performance_yards(
-    swimmer_id, meet_id, discipline_yards_id, time_cs, date, session=None,
-    is_relay_leg=0, leg_number=None, is_mixed_mf=0, notes=None
+    swimmer_id,
+    meet_id,
+    discipline_yards_id,
+    time_cs,
+    date,
+    session=None,
+    is_relay_leg=0,
+    leg_number=None,
+    is_mixed_mf=0,
+    notes=None,
 ):
     """
     Add a swimmer's performance to the performances_yards table.
@@ -521,9 +553,11 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
-        performances_metres.date, performances_metres.session, performances_metres.notes
+        performances_metres.date, performances_metres.session,
+        performances_metres.notes
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -552,17 +586,19 @@ def list_all_performances_metres():
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.name AS swimmer, pools.name AS pool, meets.name AS meet,
-        meets.date_start,
-        disciplines_metres.name AS discipline, performances_metres.time_cs,
-        performances_metres.date, performances_metres.session, performances_metres.notes
+        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        '') || swimmers.last_name AS swimmer, pools.name AS pool, meets.name AS meet,
+        meets.date_start, disciplines_metres.name AS discipline,
+        performances_metres.time_cs, performances_metres.date,
+        performances_metres.session, performances_metres.notes
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
         JOIN disciplines_metres ON performances_metres.discipline_metres_id =
         disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
-        ORDER BY swimmers.name, performances_metres.date DESC
+        ORDER BY swimmers.last_name, swimmers.first_name,
+        performances_metres.date DESC
         """
         listing = conn.execute(query).fetchall()
         return listing
@@ -575,7 +611,8 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.date, performances_yards.session, performances_yards.notes
         FROM performances_yards
@@ -606,7 +643,8 @@ def list_all_performances_yards():
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.name AS swimmer, meets.name AS meet, meets.date_start,
+        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.date, performances_yards.session, performances_yards.notes
         FROM performances_yards
@@ -614,7 +652,7 @@ def list_all_performances_yards():
         JOIN meets ON performances_yards.meet_id = meets.id
         JOIN disciplines_yards ON performances_yards.discipline_yards_id =
         disciplines_yards.id
-        ORDER BY swimmers.name, performances_yards.date DESC
+        ORDER BY swimmers.last_name, swimmers.first_name, performances_yards.date DESC
         """
         listing = conn.execute(query).fetchall()
         return listing
@@ -662,7 +700,8 @@ def get_all_personal_bests_metres():
     with get_connection() as conn:
         query = """
         SELECT
-            swimmers.name AS swimmer,
+            swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ', '')
+            || swimmers.last_name AS swimmer,
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
@@ -674,7 +713,8 @@ def get_all_personal_bests_metres():
         JOIN pools ON disciplines_metres.pool_id = pools.id
         GROUP BY performances_metres.swimmer_id,
             performances_metres.discipline_metres_id
-        ORDER BY swimmers.name, pools.name, disciplines_metres.name
+        ORDER BY swimmers.last_name, swimmers.first_name, pools.name,
+        disciplines_metres.name
         """
         all_personal_bests = conn.execute(query).fetchall()
         return all_personal_bests
@@ -717,7 +757,8 @@ def get_all_personal_bests_yards():
     with get_connection() as conn:
         query = """
         SELECT
-            swimmers.name AS swimmer,
+            swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ', '')
+            || swimmers.last_name AS swimmer,
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
             performances_yards.date AS date
@@ -727,7 +768,7 @@ def get_all_personal_bests_yards():
         performances_yards.discipline_yards_id = disciplines_yards.id
         GROUP BY performances_yards.swimmer_id,
             performances_yards.discipline_yards_id
-        ORDER BY swimmers.name, disciplines_yards.name
+        ORDER BY swimmers.last_name, swimmers.first_name, disciplines_yards.name
         """
         all_personal_bests = conn.execute(query).fetchall()
         return all_personal_bests
