@@ -90,7 +90,9 @@ def select_from_list(items, label_fn, title):
         if choice == "0":
             return None  # selection cancelled
         if choice.isdigit() and 1 <= int(choice) <= len(items):
-            return items[int(choice) - 1]
+            selection = items[int(choice) - 1]
+            print(f"  Selected: {label_fn(selection)}")
+            return selection
         print("  Invalid choice, please try again.")
 
 
@@ -102,7 +104,7 @@ def search_from_list(items, label_fn, title):
     print(title)
     print("  0. Cancel")
     while True:
-        search = input("Enter letters to search: ").strip().lower()
+        search = input("Enter letters to search (or 0 to cancel): ").strip().lower()
         if search == "0":
             return None  # selection cancelled
         filtered = [item for item in items if search in label_fn(item).lower()]
@@ -111,8 +113,13 @@ def search_from_list(items, label_fn, title):
         elif len(filtered) == 1:
             print(f"  Selected: {label_fn(filtered[0])}")
             return filtered[0]
-        else:
+        elif len(filtered) <= 5:
             return select_from_list(filtered, label_fn, title)
+        else:
+            print(
+                f"  {len(filtered)} results found. "
+                "Type more letters to narrow down to 5 or less."
+            )
 
 
 def select_discipline_metres():
