@@ -135,6 +135,12 @@ def select_discipline_metres():
     if pool is None:
         return None  # selection cancelled
 
+    # Note to user
+    print(
+        "  Note: to record a medley relay leg, select 'Medley' stroke.\n"
+        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle."
+    )
+
     # Pick a stroke
     disciplines = db.list_disciplines_metres()
     pool_disciplines = [d for d in disciplines if d["pool_id"] == pool["id"]]
@@ -169,6 +175,12 @@ def select_discipline_yards():
     Steps: stroke -> distance -> individual/relay (if applicable).
     Return a disciplines_yards row or None if cancelled.
     """
+
+    # Note to user
+    print(
+        "  Note: to record a medley relay leg, select 'Medley' stroke.\n"
+        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle."
+    )
 
     # Pick a stroke
     disciplines = db.list_disciplines_yards()
