@@ -666,6 +666,7 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
     with get_connection() as conn:
         query = """
         SELECT
+            performances_metres.discipline_metres_id,
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
@@ -702,6 +703,7 @@ def get_all_personal_bests_metres():
         SELECT
             swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ', '')
             || swimmers.last_name AS swimmer,
+            performances_metres.discipline_metres_id,
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
@@ -728,6 +730,7 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
     with get_connection() as conn:
         query = """
         SELECT
+            performances_yards.discipline_yards_id,
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
             performances_yards.date AS date
@@ -759,6 +762,7 @@ def get_all_personal_bests_yards():
         SELECT
             swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ', '')
             || swimmers.last_name AS swimmer,
+            performances_yards.discipline_yards_id,
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
             performances_yards.date AS date
