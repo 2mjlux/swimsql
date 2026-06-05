@@ -210,7 +210,7 @@ def flow_add_meet():
         print("  Meet name is required.")
     date_start = prompt_date("Start date")
     date_end = prompt_date("End date", optional=True)
-    location = prompt("City / venue (optional)", optional=True)
+    location = prompt("City / venue", optional=True)
     country = search_from_list(
         db.list_countries(), lambda c: c["name"], "Select country"
     )
