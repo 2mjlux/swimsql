@@ -195,6 +195,20 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+For development and testing, also install:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+
+## Running tests
+
+```bash
+pytest
+```
+
+
 ## Usage
 
 Run the application:
