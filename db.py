@@ -676,7 +676,8 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
-            performances_metres.date AS date
+            performances_metres.date AS date,
+            performances_metres.points AS points
         FROM performances_metres
         JOIN disciplines_metres ON
         performances_metres.discipline_metres_id = disciplines_metres.id
@@ -713,7 +714,8 @@ def get_all_personal_bests_metres():
             disciplines_metres.name AS discipline,
             MIN(performances_metres.time_cs) AS best_cs,
             pools.name AS pool,
-            performances_metres.date AS date
+            performances_metres.date AS date,
+            performances_metres.points AS points
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN disciplines_metres ON
@@ -739,7 +741,8 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
             performances_yards.discipline_yards_id,
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
-            performances_yards.date AS date
+            performances_yards.date AS date,
+            performances_yards.points AS points
         FROM performances_yards
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
@@ -771,7 +774,8 @@ def get_all_personal_bests_yards():
             performances_yards.discipline_yards_id,
             disciplines_yards.name AS discipline,
             MIN(performances_yards.time_cs) AS best_cs,
-            performances_yards.date AS date
+            performances_yards.date AS date,
+            performances_yards.points AS points
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN disciplines_yards ON
@@ -796,6 +800,7 @@ def get_performance_by_time_metres(swimmer_id, discipline_metres_id, time_cs):
                 performances_metres.time_cs,
                 performances_metres.date,
                 performances_metres.session,
+                performances_metres.points,
                 performances_metres.notes,
                 meets.name AS meet,
                 disciplines_metres.name AS discipline
@@ -824,6 +829,7 @@ def get_performance_by_time_yards(swimmer_id, discipline_yards_id, time_cs):
                 performances_yards.time_cs,
                 performances_yards.date,
                 performances_yards.session,
+                performances_yards.points,
                 performances_yards.notes,
                 meets.name AS meet,
                 disciplines_yards.name AS discipline
