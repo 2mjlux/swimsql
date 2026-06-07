@@ -120,7 +120,7 @@ def init_db():
                 leg_number INTEGER,  -- 1-4, NULL if not a relay leg
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
                 points INTEGER,  -- World Aquatics points (metres), optional
-                notes TEXT  -- optional
+                notes TEXT,  -- optional
                 CONSTRAINT fk_performances_metres_swimmers
                     FOREIGN KEY(swimmer_id)
                     REFERENCES swimmers(id),
@@ -144,7 +144,7 @@ def init_db():
                 leg_number INTEGER,  -- 1-4, NULL if not a relay leg
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
                 points INTEGER,  -- USA Swimming Power Points (yards), optional
-                notes TEXT  -- optional
+                notes TEXT,  -- optional
                 CONSTRAINT fk_performances_yards_swimmers
                     FOREIGN KEY(swimmer_id)
                     REFERENCES swimmers(id),
@@ -562,8 +562,8 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
         SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
-        performances_metres.date, performances_metres.session,
-        performances_metres.notes
+        performances_metres.points, performances_metres.date,
+        performances_metres.session, performances_metres.notes
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -595,8 +595,9 @@ def list_all_performances_metres():
         SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, pools.name AS pool, meets.name AS meet,
         meets.date_start, disciplines_metres.name AS discipline,
-        performances_metres.time_cs, performances_metres.date,
-        performances_metres.session, performances_metres.notes
+        performances_metres.time_cs, performances_metres.points,
+        performances_metres.date, performances_metres.session,
+        performances_metres.notes
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -620,7 +621,8 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
         SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
-        performances_yards.date, performances_yards.session, performances_yards.notes
+        performances_yards.points, performances_yards.date,
+        performances_yards.session, performances_yards.notes
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
@@ -652,7 +654,8 @@ def list_all_performances_yards():
         SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
-        performances_yards.date, performances_yards.session, performances_yards.notes
+        performances_yards.points, performances_yards.date,
+        performances_yards.session, performances_yards.notes
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
