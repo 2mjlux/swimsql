@@ -388,6 +388,10 @@ def flow_add_performance():
             break
         except ValueError as e:
             print(f"  {e}")
+    points = None
+    point_str = prompt("Points (optional, as published on result sheet)", optional=True)
+    if point_str and point_str.isdigit():
+        points = int(point_str)
     notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
@@ -400,6 +404,7 @@ def flow_add_performance():
             is_relay_leg,
             leg_number,
             is_mixed_mf,
+            points,
             notes,
         )
     else:
@@ -413,6 +418,7 @@ def flow_add_performance():
             is_relay_leg,
             leg_number,
             is_mixed_mf,
+            points,
             notes,
         )
     print(f"  Performance {time_str} successfully added!")
