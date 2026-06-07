@@ -12,6 +12,7 @@ SwimSQL lets you record and consult a swimmer's competition results from the ter
 
 **Features:**
 - Record meets and performances by discipline
+- Optionally record points associated with the performance
 - Filter results by discipline and year
 - View personal bests across all disciplines
 - Export results to ODS or XLSX for sharing
@@ -231,6 +232,8 @@ You will be presented with a welcome screen followed by the main menu:
 0. Quit
 
 Type the number of your choice and follow the prompts.
+
+Note: `performances_metres` and `performances_yards` include an optional `points` field. For metre-based performances in 25m and 50m pools, this records World Aquatics points. For yard-based performances, this records USA Swimming Power Points. Points for 33m pool performances are not officially defined and should be left blank.
 
 ### Data storage
 
