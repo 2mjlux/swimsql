@@ -119,7 +119,8 @@ def init_db():
                 is_relay_leg INTEGER NOT NULL DEFAULT 0,  -- 1 if swum during a relay
                 leg_number INTEGER,  -- 1-4, NULL if not a relay leg
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
-                notes TEXT,  -- optional
+                points INTEGER,  -- World Aquatics points (metres), optional
+                notes TEXT  -- optional
                 CONSTRAINT fk_performances_metres_swimmers
                     FOREIGN KEY(swimmer_id)
                     REFERENCES swimmers(id),
@@ -142,7 +143,8 @@ def init_db():
                 is_relay_leg INTEGER NOT NULL DEFAULT 0,  -- 1 if swum during a relay
                 leg_number INTEGER,  -- 1-4, NULL if not a relay leg
                 is_mixed_mf INTEGER NOT NULL DEFAULT 0,  -- 1 if mixed gender relay
-                notes TEXT,  -- optional
+                points INTEGER,  -- USA Swimming Power Points (yards), optional
+                notes TEXT  -- optional
                 CONSTRAINT fk_performances_yards_swimmers
                     FOREIGN KEY(swimmer_id)
                     REFERENCES swimmers(id),
@@ -480,6 +482,7 @@ def add_performance_metres(
     is_relay_leg=0,
     leg_number=None,
     is_mixed_mf=0,
+    points=None,
     notes=None,
 ):
     """
@@ -495,14 +498,15 @@ def add_performance_metres(
         is_relay_leg,
         leg_number,
         is_mixed_mf,
+        points,
         notes,
     )
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO performances_metres (swimmer_id, meet_id,
             discipline_metres_id, time_cs, date, session, is_relay_leg, leg_number,
-            is_mixed_mf, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            is_mixed_mf, points, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             performance,
         )
         return cursor.lastrowid
@@ -518,6 +522,7 @@ def add_performance_yards(
     is_relay_leg=0,
     leg_number=None,
     is_mixed_mf=0,
+    points=None,
     notes=None,
 ):
     """
@@ -533,14 +538,15 @@ def add_performance_yards(
         is_relay_leg,
         leg_number,
         is_mixed_mf,
+        points,
         notes,
     )
     with get_connection() as conn:
         cursor = conn.execute(
             """INSERT INTO performances_yards (swimmer_id, meet_id,
             discipline_yards_id, time_cs, date, session, is_relay_leg, leg_number,
-            is_mixed_mf, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            is_mixed_mf, points, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             performance,
         )
         return cursor.lastrowid
