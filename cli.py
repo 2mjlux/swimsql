@@ -469,12 +469,14 @@ def flow_list_performances():
             r["date"],
             r["discipline"],
             db.cs_to_time(r["time_cs"]),
+            r["points"] if r["points"] is not None else "",
             r["session"] or "",
             r["notes"] or "",
         ]
         for r in results
     ]
-    headers = ["Swimmer", "Meet", "Date", "Discipline", "Time", "Session", "Notes"]
+    headers = ["Swimmer", "Meet", "Date", "Discipline", "Time", "Points", "Session",
+               "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
@@ -526,6 +528,7 @@ def flow_personal_bests():
                     [
                         best["discipline"],
                         db.cs_to_time(best["best_cs"]),
+                        best["points"] if best["points"] is not None else "",
                         perf["date"],
                         perf["session"] or "",
                         perf["meet"],
@@ -542,13 +545,15 @@ def flow_personal_bests():
                     [
                         best["discipline"],
                         db.cs_to_time(best["best_cs"]),
+                        best["points"] if best["points"] is not None else "",
                         perf["date"],
                         perf["session"] or "",
                         perf["meet"],
                         perf["notes"] or "",
                     ]
                 )
-    headers = ["Discipline", "Best Time", "Date", "Session", "Meet", "Notes"]
+    headers = ["Discipline", "Best Time", "Points", "Date", "Session", "Meet",
+               "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 

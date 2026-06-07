@@ -15,20 +15,20 @@ from openpyxl.styles import Font
 
 HEADERS_PERFORMANCES_METRES = [
     "Swimmer", "Pool", "Meet", "Meet Start",
-    "Discipline", "Time", "Date", "Session", "Points", "Notes"
+    "Discipline", "Time", "Points", "Date", "Session", "Notes"
 ]
 
 HEADERS_PERFORMANCES_YARDS = [
     "Swimmer", "Meet", "Meet Start",
-    "Discipline", "Time", "Date", "Session", "Points", "Notes"
+    "Discipline", "Time", "Points", "Date", "Session", "Notes"
 ]
 
 HEADERS_PERSONAL_BESTS_METRES = [
-    "Swimmer", "Discipline", "Pool", "Best Time", "Date"
+    "Swimmer", "Discipline", "Pool", "Best Time", "Points", "Date"
 ]
 
 HEADERS_PERSONAL_BESTS_YARDS = [
-    "Swimmer", "Discipline", "Best Time", "Date"
+    "Swimmer", "Discipline", "Best Time", "Points", "Date"
 ]
 
 
@@ -105,9 +105,9 @@ def export_ods(filepath):
             row["date_start"],
             row["discipline"],
             db.cs_to_time(row["time_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
             row["session"] or "",
-            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_metres"]
@@ -122,9 +122,9 @@ def export_ods(filepath):
             row["date_start"],
             row["discipline"],
             db.cs_to_time(row["time_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
             row["session"] or "",
-            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_yards"]
@@ -138,6 +138,7 @@ def export_ods(filepath):
             row["discipline"],
             row["pool"],
             db.cs_to_time(row["best_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
         ]
         for row in data["personal_bests_metres"]
@@ -150,6 +151,7 @@ def export_ods(filepath):
             row["swimmer"],
             row["discipline"],
             db.cs_to_time(row["best_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
         ]
         for row in data["personal_bests_yards"]
@@ -180,9 +182,9 @@ def export_xlsx(filepath):
             row["date_start"],
             row["discipline"],
             db.cs_to_time(row["time_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
             row["session"] or "",
-            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_metres"]
@@ -197,9 +199,9 @@ def export_xlsx(filepath):
             row["date_start"],
             row["discipline"],
             db.cs_to_time(row["time_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
             row["session"] or "",
-            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_yards"]
@@ -213,6 +215,7 @@ def export_xlsx(filepath):
             row["discipline"],
             row["pool"],
             db.cs_to_time(row["best_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
         ]
         for row in data["personal_bests_metres"]
@@ -225,6 +228,7 @@ def export_xlsx(filepath):
             row["swimmer"],
             row["discipline"],
             db.cs_to_time(row["best_cs"]),
+            row["points"] if row["points"] is not None else "",
             row["date"],
         ]
         for row in data["personal_bests_yards"]
