@@ -15,12 +15,12 @@ from openpyxl.styles import Font
 
 HEADERS_PERFORMANCES_METRES = [
     "Swimmer", "Pool", "Meet", "Meet Start",
-    "Discipline", "Time", "Date", "Session", "Notes"
+    "Discipline", "Time", "Date", "Session", "Points", "Notes"
 ]
 
 HEADERS_PERFORMANCES_YARDS = [
     "Swimmer", "Meet", "Meet Start",
-    "Discipline", "Time", "Date", "Session", "Notes"
+    "Discipline", "Time", "Date", "Session", "Points", "Notes"
 ]
 
 HEADERS_PERSONAL_BESTS_METRES = [
@@ -107,6 +107,7 @@ def export_ods(filepath):
             db.cs_to_time(row["time_cs"]),
             row["date"],
             row["session"] or "",
+            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_metres"]
@@ -123,6 +124,7 @@ def export_ods(filepath):
             db.cs_to_time(row["time_cs"]),
             row["date"],
             row["session"] or "",
+            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_yards"]
@@ -180,6 +182,7 @@ def export_xlsx(filepath):
             db.cs_to_time(row["time_cs"]),
             row["date"],
             row["session"] or "",
+            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_metres"]
@@ -196,6 +199,7 @@ def export_xlsx(filepath):
             db.cs_to_time(row["time_cs"]),
             row["date"],
             row["session"] or "",
+            row["points"] if row["points"] is not None else "",
             row["notes"] or "",
         ]
         for row in data["performances_yards"]
