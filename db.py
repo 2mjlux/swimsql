@@ -370,6 +370,9 @@ def time_to_cs(time_str):
         if ":" in time_str:
             minutes_part, rest = time_str.split(":")
             seconds_part, hundredths_part = rest.split(".")
+            if len(hundredths_part) != 2:
+                raise ValueError("Centiseconds must be exactly two digits "
+                                 "(e.g. 28.74 not 28.7).")
             cs = (
                 int(minutes_part) * 6000
                 + int(seconds_part) * 100
@@ -377,6 +380,9 @@ def time_to_cs(time_str):
             )
             return cs
         seconds_part, hundredths_part = time_str.split(".")
+        if len(hundredths_part) != 2:
+            raise ValueError("Centiseconds must be exactly two digits "
+                             "(e.g. 28.74 not 28.7).")
         cs = int(seconds_part) * 100 + int(hundredths_part)
         return cs
     except (ValueError, AttributeError):
