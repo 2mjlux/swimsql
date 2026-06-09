@@ -370,27 +370,31 @@ def time_to_cs(time_str):
         if ":" in time_str:
             minutes_part, rest = time_str.split(":")
             seconds_part, hundredths_part = rest.split(".")
-            if len(hundredths_part) != 2:
-                raise ValueError("Centiseconds must be exactly two digits "
-                                 "(e.g. 28.74 not 28.7).")
+        else:
+            seconds_part, hundredths_part = time_str.split(".")
+        if len(hundredths_part) != 2:
+            raise ValueError("Centiseconds must be exactly two digits "
+                             "(e.g. 28.74 not 28.7).")
+        if ":" in time_str:
             cs = (
                 int(minutes_part) * 6000
                 + int(seconds_part) * 100
                 + int(hundredths_part)
             )
             return cs
-        seconds_part, hundredths_part = time_str.split(".")
-        if len(hundredths_part) != 2:
-            raise ValueError("Centiseconds must be exactly two digits "
-                             "(e.g. 28.74 not 28.7).")
         cs = int(seconds_part) * 100 + int(hundredths_part)
         return cs
-    except (ValueError, AttributeError):
+    except ValueError as e:
+        if "Centiseconds" in str(e):
+            raise  # re-raise the same message as above unchanged
         raise ValueError(
-            f"Invalid time format '{time_str}'. Use SS.cc or MM:SS.cc "
-            "(e.g. 28.74 for 28 seconds and 74 hundredths of a second "
-            "or 1:03.12 for 1 minute, 3 seconds and 12 hundredths of a second)."
-            " Centiseconds must always be exactly 2 digits (e.g. 28.70 not 27.7)."
+            f"Invalid time format '{time_str}'. Please use SS.cc or MM:SS.cc "
+            "(e.g. 28.74 or 1:03.12)."
+        )
+    except (AttributeError, TypeError):
+        raise ValueError(
+            "Time cannot be None. Please enter a valid time in SS.cc or "
+            "MM:SS.cc format (e.g. 28.74 or 1:03.12)."
         )
 
 

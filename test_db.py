@@ -32,22 +32,33 @@ def test_db(monkeypatch):
 def test_cs_to_time_seconds_only():
     assert db.cs_to_time(2874) == "28.74"
 
+
 def test_cs_to_time_with_minutes():
     assert db.cs_to_time(6345) == "1:03.45"
+
 
 def test_cs_to_time_zero():
     assert db.cs_to_time(0) == "00.00"
 
+
 def test_time_to_cs_seconds_only():
     assert db.time_to_cs("28.74") == 2874
 
+
 def test_time_to_cs_with_minutes():
     assert db.time_to_cs("1:03.45") == 6345
+
 
 def test_time_to_cs_invalid_format():
     with pytest.raises(ValueError):
         db.time_to_cs("abc")
 
+
 def test_time_to_cs_invalid_centiseconds():
     with pytest.raises(ValueError):
         db.time_to_cs("28.7")
+
+
+def test_time_to_cs_none():
+    with pytest.raises(ValueError, match="Time cannot be None"):
+        db.time_to_cs(None)
