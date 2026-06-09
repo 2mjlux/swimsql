@@ -62,3 +62,25 @@ def test_time_to_cs_invalid_centiseconds():
 def test_time_to_cs_none():
     with pytest.raises(ValueError, match="Time cannot be None"):
         db.time_to_cs(None)
+
+
+# --- Seeding tests ---
+
+def test_pools_metres_seeded(test_db):
+    pools = db.list_pools_metres()
+    assert len(pools) == 3
+
+
+def test_countries_seeded(test_db):
+    countries = db.list_countries()
+    assert len(countries) > 0
+
+
+def test_disciplines_metres_seeded(test_db):
+    disciplines = db.list_disciplines_metres()
+    assert len(disciplines) > 0
+
+
+def test_disciplines_yards_seeded(test_db):
+    disciplines = db.list_disciplines_yards()
+    assert len(disciplines) > 0
