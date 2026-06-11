@@ -145,3 +145,24 @@ def test_personal_best_returns_fastest(test_db):
     bests = db.get_personal_bests_metres(swimmer_id)
     assert len(bests) == 1
     assert bests[0]["best_cs"] == 6000
+
+
+# --- Points tests ---
+
+def test_add_performance_with_points(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    discipline_id = disciplines[0]["id"]
+    db.add_performance_metres(
+        swimmer_id, meet_id, discipline_id, 6345, "2026-01-01",
+        points=542
+    )
+    results = db.list_performances_metres(swimmer_id)
+    assert len(results) == 1
+    assert results[0]["points"] == 542
