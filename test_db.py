@@ -166,3 +166,45 @@ def test_add_performance_with_points(test_db):
     results = db.list_performances_metres(swimmer_id)
     assert len(results) == 1
     assert results[0]["points"] == 542
+
+
+# --- Yards performance tests ---
+
+def test_add_and_list_performance_yards(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_yards()
+    discipline_id = disciplines[0]["id"]
+    db.add_performance_yards(
+        swimmer_id, meet_id, discipline_id, 5500, "2026-01-01",
+        points=450
+    )
+    results = db.list_performances_yards(swimmer_id)
+    assert len(results) == 1
+    assert results[0]["time_cs"] == 5500
+    assert results[0]["points"] == 450
+
+def test_personal_best_yards_returns_fastest(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_yards()
+    discipline_id = disciplines[0]["id"]
+    db.add_performance_yards(
+        swimmer_id, meet_id, discipline_id, 5500, "2026-01-01"
+    )
+    db.add_performance_yards(
+        swimmer_id, meet_id, discipline_id, 5200, "2026-02-01"
+    )
+    bests = db.get_personal_bests_yards(swimmer_id)
+    assert len(bests) == 1
+    assert bests[0]["best_cs"] == 5200
