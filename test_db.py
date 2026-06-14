@@ -265,3 +265,50 @@ def test_personal_bests_empty(test_db):
     )
     bests = db.get_personal_bests_metres(swimmer_id)
     assert len(bests) == 0
+
+
+# --- Swimmer name tests ---
+
+def test_swimmer_with_middle_name(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    db.add_swimmer(
+        "Alice", "Marie", "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    swimmers = db.list_swimmers()
+    assert swimmers[0]["name"] == "Alice Marie Smith"
+
+
+def test_swimmer_without_middle_name(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    swimmers = db.list_swimmers()
+    assert swimmers[0]["name"] == "Alice Smith"
+
+
+# --- Data integrity tests ---
+
+def test_add_swimmer_invalid_club(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    with pytest.raises(Exception):
+        db.add_swimmer(
+            "Alice", None, "Smith", "2010-01-01", "F", 999, country_id
+        )
+
+
+def test_add_performance_invalid_swimmer(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    discipline_id = disciplines[0]["id"]
+    with pytest.raises(Exception):
+        db.add_performance_metres(
+            999, meet_id, discipline_id, 6345, "2026-01-01"
+        )
