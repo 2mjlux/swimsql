@@ -312,3 +312,28 @@ def test_add_performance_invalid_swimmer(test_db):
         db.add_performance_metres(
             999, meet_id, discipline_id, 6345, "2026-01-01"
         )
+
+
+# --- Year filter test ---
+
+def test_list_performances_year_filter(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Andrew", None, "Smith", "2009-01-02", "M", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    discipline_id = disciplines[0]["id"]
+    # add two performances in different years
+    db.add_performance_metres(
+        swimmer_id, meet_id, discipline_id, 6345, "2025-01-01"
+    )
+    db.add_performance_metres(
+        swimmer_id, meet_id, discipline_id, 6200, "2026-01-01"
+    )
+    # filter by 2026 — should return only one result
+    results = db.list_performances_metres(swimmer_id, year=2026)
+    assert len(results) == 1
+    assert results[0]["date"] == "2026-01-01"
