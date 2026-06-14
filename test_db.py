@@ -337,3 +337,23 @@ def test_list_performances_year_filter(test_db):
     results = db.list_performances_metres(swimmer_id, year=2026)
     assert len(results) == 1
     assert results[0]["date"] == "2026-01-01"
+
+
+# --- Points tests ---
+
+def test_performance_without_points_stores_none(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    discipline_id = disciplines[0]["id"]
+    db.add_performance_metres(
+        swimmer_id, meet_id, discipline_id, 6345, "2026-01-01"
+    )
+    results = db.list_performances_metres(swimmer_id)
+    assert len(results) == 1
+    assert results[0]["points"] is None
