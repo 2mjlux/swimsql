@@ -1,7 +1,6 @@
 # SwimSQL
 
-> ⚠️ This project is currently under active development.
-> All modules are written. Testing and bug fixing in progress.
+> SwimSQL v1.0.0 is released. 40 automated tests, 98% code coverage.
 
 A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
