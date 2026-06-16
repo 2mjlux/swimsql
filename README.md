@@ -42,26 +42,26 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
 
 `cli.py` contains three types of functions:
 
-**Helper functions** — reusable building blocks:
-- `prompt()` — ask the user for a single input
-- `prompt_date()` — ask the user for a date in YYYY-MM-DD format
-- `prompt_year()` — ask the user for a year in YYYY format
-- `select_from_list()` — show a numbered list, return the chosen item
-- `search_from_list()` — search a long list by typing first letters
-- `confirm()` — ask a yes/no question
-- `select_discipline_metres()` — guided sub-menu for picking a metres discipline
-- `select_discipline_yards()` — guided sub-menu for picking a yards discipline
+**Helper functions** - reusable building blocks:
+- `prompt()` - ask the user for a single input
+- `prompt_date()` - ask the user for a date in YYYY-MM-DD format
+- `prompt_year()` - ask the user for a year in YYYY format
+- `select_from_list()` - show a numbered list, return the chosen item
+- `search_from_list()` - search a long list by typing first letters
+- `confirm()` - ask a yes/no question
+- `select_discipline_metres()` - guided sub-menu for picking a metres discipline
+- `select_discipline_yards()` - guided sub-menu for picking a yards discipline
 
-**Flow functions** — one per menu option:
-- `flow_add_meet()` — prompts for meet details, calls `add_meet()` from `db.py`
-- `flow_add_swimmer()` — prompts for swimmer details, calls `add_swimmer()` from `db.py`
-- `flow_add_club()` — prompts for club details, calls `add_club()` from `db.py`
-- `flow_add_performance()` — prompts for performance, calls `add_performance_metres()` or `add_performance_yards()` from `db.py`
-- `flow_list_performances()` — asks for filters, displays results via tabulate
-- `flow_personal_bests()` — displays personal bests via tabulate
-- `flow_export()` — generates ODS/XLSX file via `export.py`
+**Flow functions** - one per menu option:
+- `flow_add_meet()` - prompts for meet details, calls `add_meet()` from `db.py`
+- `flow_add_swimmer()` - prompts for swimmer details, calls `add_swimmer()` from `db.py`
+- `flow_add_club()` - prompts for club details, calls `add_club()` from `db.py`
+- `flow_add_performance()` - prompts for performance, calls `add_performance_metres()` or `add_performance_yards()` from `db.py`
+- `flow_list_performances()` - asks for filters, displays results via tabulate
+- `flow_personal_bests()` - displays personal bests via tabulate
+- `flow_export()` - generates ODS/XLSX file via `export.py`
 
-**Main menu** — the `main()` function that ties everything together.
+**Main menu** - the `main()` function that ties everything together.
 
 ### Key principle
 
@@ -84,7 +84,7 @@ format. The export contains four sheets:
 | `Personal Bests Metres` | Best time per swimmer per metre discipline |
 | `Personal Bests Yards` | Best time per swimmer per yard discipline |
 
-Family members can filter and sort the data using Collabora Online,
+Athletes, family and friends can filter and sort the data using Collabora Online,
 LibreOffice, OpenOffice, or Excel.
 
 
@@ -140,11 +140,17 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 
 ### Relay leg fields in performances tables
 
-When recording an individual relay leg time, the following additional fields are populated in `performances_metres` or `performances_yards`:
+When recording an individual relay leg time, the following additional
+fields are populated in `performances_metres` or `performances_yards`:
 
-- `is_relay_leg` -- 1 if this time was swum during a relay leg
-- `leg_number`   -- position in the relay (1-4); leg 1 = standing start (time may count as individual record), legs 2-4 = flying start (time cannot count for individual records)
-- `is_mixed_mf`  -- 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record. Leg 1 of a mixed relay cannot count for records under European Aquatics rules. Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
+- `is_relay_leg` - 1 if this time was swum during a relay leg
+- `leg_number` - position in the relay (1-4); leg 1 = standing start
+  (time may count as individual record), legs 2-4 = flying start
+  (time cannot count for individual records)
+- `is_mixed_mf` - 1 if mixed gender relay. Leg 1 of a non-mixed relay
+  may count as an individual record. Leg 1 of a mixed relay cannot count
+  for records under European Aquatics rules.
+  Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
 
 
 ## Known limitations and planned features
@@ -159,16 +165,56 @@ SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
 - Delete a swimmer, meet, club, or performance
 
 **Relay team breakdown (v2)**
-- Complete relay team breakdown (recording all four swimmers' leg times linked to one team result) is designed but deferred to v2. Individual relay leg times can be recorded via the performances tables.
+- Complete relay team breakdown (recording all four swimmers' leg times
+  linked to one team result) is designed but deferred to v2. Individual
+  relay leg times can be recorded via the performances tables.
+
+
+## Testing
+
+SwimSQL uses pytest for automated testing of the database layer (`db.py`),
+which is the most critical module — all data is stored and retrieved there.
+
+### What is tested
+
+- **Time conversion** - `cs_to_time()` and `time_to_cs()` including edge
+  cases (zero, invalid format, invalid centiseconds, None input)
+- **Database seeding** - pools, countries, metres and yards disciplines
+- **CRUD operations** - meets, clubs, swimmers, performances (metres and yards)
+- **Personal bests** - correct fastest time returned across multiple meets,
+  including duplicate times at different meets
+- **Filters** - discipline filter and year filter for list functions
+- **Relay fields** - `is_relay_leg`, `leg_number`, `is_mixed_mf` stored correctly
+- **Points** - stored and retrieved correctly, `None` when not entered
+- **Swimmer names** - with and without middle name
+- **Data integrity** - foreign key constraints enforced
+
+### Coverage
+
+40 automated tests covering 98% of `db.py` statements. The remaining 2%
+are seeding guard clauses (early returns when data is already seeded) that
+only execute when the database is pre-populated - not reachable from a
+fresh temporary test database.
+
+`cli.py` and `export.py` were verified through manual end-to-end testing
+of all menu options before release.
+
+### Running tests
+
+```bash
+pytest                                        # run all tests
+pytest -v                                     # verbose output
+pytest --cov=db --cov-report=term-missing     # with coverage report
+```
 
 
 ## Requirements
 
 - Python 3.10 or higher
-- [tabulate](https://pypi.org/project/tabulate/) — terminal table formatting
-- [odfpy](https://pypi.org/project/odfpy/) — ODS export
-- [openpyxl](https://pypi.org/project/openpyxl/) — XLSX export
-- [pycountry](https://pypi.org/project/pycountry/) — ISO country codes
+- [tabulate](https://pypi.org/project/tabulate/) - terminal table formatting
+- [odfpy](https://pypi.org/project/odfpy/) - ODS export
+- [openpyxl](https://pypi.org/project/openpyxl/) - XLSX export
+- [pycountry](https://pypi.org/project/pycountry/) - ISO country codes
 
 All other dependencies (SQLite, etc.) are included in Python's standard library.
 
@@ -189,7 +235,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install dependencies:
+Install runtime dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -199,13 +245,6 @@ For development and testing, also install:
 
 ```bash
 pip install -r requirements-dev.txt
-```
-
-
-## Running tests
-
-```bash
-pytest
 ```
 
 
@@ -219,30 +258,44 @@ python swimsql.py
 
 You will be presented with a welcome screen followed by the main menu:
 
+```
 === SwimSQL v1.0.0 ===
-
-1. Add club
-2. Add swimmer
-3. Add meet
-4. Add performance
-5. List performances
-6. Personal bests
-7. Export
-0. Quit
+  1. Add club
+  2. Add swimmer
+  3. Add meet
+  4. Add performance
+  5. List performances
+  6. Personal bests
+  7. Export
+  0. Quit
+```
 
 Type the number of your choice and follow the prompts.
 
-Note: `performances_metres` and `performances_yards` include an optional `points` field. For metre-based performances in 25m and 50m pools, this records World Aquatics points. For yard-based performances, this records USA Swimming Power Points. Points for 33m pool performances are not officially defined and should be left blank.
+### Points
+
+`performances_metres` and `performances_yards` include an optional `points`
+field:
+- For metre-based performances in 25m and 50m pools: World Aquatics points
+- For yard-based performances: USA Swimming Power Points
+- For 33m pool performances: no official points system exists, leave blank
+
+Enter points as published on the official result sheet.
 
 ### Data storage
 
-SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run. To back up your data, copy this file to a safe location. To migrate to a new machine, copy it to the same path on the new machine.
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is
+created automatically on first run. To back up your data, copy this file
+to a safe location. To migrate to a new machine, copy it to the same path
+on the new machine.
 
 
 ## License
 
-The SwimSQL project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+The SwimSQL project is licensed under the
+[Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
 
-You are free to use, modify, and distribute this software, provided that any modifications to the original files are released under the same licence.
+You are free to use, modify, and distribute this software, provided that
+any modifications to the original files are released under the same licence.
 
 Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
