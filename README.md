@@ -16,7 +16,7 @@ SwimSQL lets you record and consult a swimmer's competition results from the ter
 - View personal bests across all disciplines
 - Export results to ODS or XLSX for sharing
 
-Disciplines are pre-loaded at first run and cover all standard individual events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley) in 25m, 50m, and 33m metre pools and 25y yard pools, plus relay events.
+Disciplines are pre-loaded at first run and cover all standard individual events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley) in 25, 50, and 33 metre pools and the 25 yard pool, plus relay events.
 
 
 ## Architecture
@@ -31,11 +31,16 @@ SwimSQL follows a strict separation of responsibilities across its modules:
 | `swimsql.py` | Entry point: launches the application |
 
 No SQL is written outside `db.py`. No user interaction happens outside `cli.py`.
-The modules communicate in one direction only:
+The modules communicate in a strict hierarchy:
 
 ```
-swimsql.py --> cli.py --> db.py --> swimsql.db
-                     --> export.py --> swimsql.ods / swimsql.xlsx
+swimsql.py
+    │
+    └── cli.py ──────────────────── db.py ── swimsql.db
+            │                         │
+            └────── export.py ────────┘
+                         │
+                         └── swimsql.ods / swimsql.xlsx
 ```
 
 ### cli.py in detail
@@ -58,7 +63,7 @@ swimsql.py --> cli.py --> db.py --> swimsql.db
 - `flow_add_club()` - prompts for club details, calls `add_club()` from `db.py`
 - `flow_add_performance()` - prompts for performance, calls `add_performance_metres()` or `add_performance_yards()` from `db.py`
 - `flow_list_performances()` - asks for filters, displays results via tabulate
-- `flow_personal_bests()` - displays personal bests via tabulate
+- `flow_personal_bests()` - asks for optional discipline filter, displays personal bests via tabulate
 - `flow_export()` - generates ODS/XLSX file via `export.py`
 
 **Main menu** - the `main()` function that ties everything together.
@@ -84,8 +89,7 @@ format. The export contains four sheets:
 | `Personal Bests Metres` | Best time per swimmer per metre discipline |
 | `Personal Bests Yards` | Best time per swimmer per yard discipline |
 
-Athletes, family and friends can filter and sort the data using Collabora Online,
-LibreOffice, OpenOffice, or Excel.
+Athletes, family and friends can filter and sort the data using Collabora Online, LibreOffice, OpenOffice, or Excel.
 
 
 ## Database schema
@@ -144,13 +148,8 @@ When recording an individual relay leg time, the following additional
 fields are populated in `performances_metres` or `performances_yards`:
 
 - `is_relay_leg` - 1 if this time was swum during a relay leg
-- `leg_number` - position in the relay (1-4); leg 1 = standing start
-  (time may count as individual record), legs 2-4 = flying start
-  (time cannot count for individual records)
-- `is_mixed_mf` - 1 if mixed gender relay. Leg 1 of a non-mixed relay
-  may count as an individual record. Leg 1 of a mixed relay cannot count
-  for records under European Aquatics rules.
-  Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
+- `leg_number` - position in the relay (1-4); leg 1 = standing start (time may count as individual record), legs 2-4 = flying start (time cannot count for individual records)
+- `is_mixed_mf` - 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record. Leg 1 of a mixed relay cannot count for records under European Aquatics rules. Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
 
 
 ## Known limitations and planned features
@@ -165,24 +164,19 @@ SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
 - Delete a swimmer, meet, club, or performance
 
 **Relay team breakdown (v2)**
-- Complete relay team breakdown (recording all four swimmers' leg times
-  linked to one team result) is designed but deferred to v2. Individual
-  relay leg times can be recorded via the performances tables.
+- Complete relay team breakdown (recording all four swimmers' leg times linked to one team result) is designed but deferred to v2. Individual relay leg times can be recorded via the performances tables.
 
 
-## Testing
+## Testing for version 1.1.0
 
-SwimSQL uses pytest for automated testing of the database layer (`db.py`),
-which is the most critical module — all data is stored and retrieved there.
+SwimSQL uses pytest for automated testing of the database layer (`db.py`), which is the most critical module - all data is stored and retrieved there.
 
 ### What is tested
 
-- **Time conversion** - `cs_to_time()` and `time_to_cs()` including edge
-  cases (zero, invalid format, invalid centiseconds, None input)
+- **Time conversion** - `cs_to_time()` and `time_to_cs()` including edge cases (zero, invalid format, invalid centiseconds, None input)
 - **Database seeding** - pools, countries, metres and yards disciplines
 - **CRUD operations** - meets, clubs, swimmers, performances (metres and yards)
-- **Personal bests** - correct fastest time returned across multiple meets,
-  including duplicate times at different meets
+- **Personal bests** - correct fastest time returned across multiple meets, including duplicate times at different meets
 - **Filters** - discipline filter and year filter for list functions
 - **Relay fields** - `is_relay_leg`, `leg_number`, `is_mixed_mf` stored correctly
 - **Points** - stored and retrieved correctly, `None` when not entered
@@ -191,13 +185,9 @@ which is the most critical module — all data is stored and retrieved there.
 
 ### Coverage
 
-40 automated tests covering 98% of `db.py` statements. The remaining 2%
-are seeding guard clauses (early returns when data is already seeded) that
-only execute when the database is pre-populated - not reachable from a
-fresh temporary test database.
+40 automated tests covering 98% of `db.py` statements. The remaining 2% are seeding guard clauses (early returns when data is already seeded) that only execute when the database is pre-populated - not reachable from a fresh temporary test database.
 
-`cli.py` and `export.py` were verified through manual end-to-end testing
-of all menu options before release.
+`cli.py` and `export.py` were verified through manual end-to-end testing of the main menu options before release. Metres performances, personal bests and both export formats were fully tested. Yards performances follow the same code path and are covered by the automated test suite.
 
 ### Running tests
 
@@ -274,8 +264,7 @@ Type the number of your choice and follow the prompts.
 
 ### Points
 
-`performances_metres` and `performances_yards` include an optional `points`
-field:
+`performances_metres` and `performances_yards` include an optional `points` field:
 - For metre-based performances in 25m and 50m pools: World Aquatics points
 - For yard-based performances: USA Swimming Power Points
 - For 33m pool performances: no official points system exists, leave blank
@@ -284,18 +273,13 @@ Enter points as published on the official result sheet.
 
 ### Data storage
 
-SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is
-created automatically on first run. To back up your data, copy this file
-to a safe location. To migrate to a new machine, copy it to the same path
-on the new machine.
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run. To back up your data, copy this file to a safe location. To migrate to a new machine, copy it to the same path on the new machine.
 
 
 ## License
 
-The SwimSQL project is licensed under the
-[Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+The SwimSQL project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
 
-You are free to use, modify, and distribute this software, provided that
-any modifications to the original files are released under the same licence.
+You are free to use, modify, and distribute this software, provided that any modifications to the original files are released under the same licence.
 
 Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
