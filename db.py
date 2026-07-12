@@ -929,3 +929,19 @@ def list_pools_metres():
         """
         listing = conn.execute(query).fetchall()
         return listing
+
+
+def count_performances_for_swimmer(swimmer_id):
+    """
+    Count all performances (metres and yards) linked to a swimmer.
+    """
+    with get_connection() as conn:
+        row_m = conn.execute(
+            "SELECT COUNT(*) FROM performances_metres WHERE swimmer_id = ?",
+            (swimmer_id,),
+            ).fetchone()
+        row_y = conn.execute(
+            "SELECT COUNT(*) FROM performances_yards WHERE swimmer_id = ?",
+            (swimmer_id,),
+            ).fetchone()
+        return row_m[0] + row_y[0]
