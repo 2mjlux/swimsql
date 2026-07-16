@@ -961,3 +961,14 @@ def count_performances_for_meet(meet_id):
             (meet_id,),
             ).fetchone()
         return row_m[0] + row_y[0]
+
+
+def count_swimmers_for_club(club_id):
+    """
+    Count all swimmers that are members of a given club.
+    """
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM swimmers WHERE club_id = ?", (club_id,),
+        ).fetchone()
+        return row[0]
