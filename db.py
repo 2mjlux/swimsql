@@ -972,3 +972,18 @@ def count_swimmers_for_club(club_id):
             "SELECT COUNT(*) FROM swimmers WHERE club_id = ?", (club_id,),
         ).fetchone()
         return row[0]
+
+
+def delete_swimmer(swimmer_id):
+    """
+    Delete a swimmer.
+    Raises a ValueError if the swimmer has linked performances.
+    """
+    count = count_performances_for_swimmer(swimmer_id)
+    if count > 0:
+        raise ValueError(
+            f"Cannot delete this swimmer: {count} performance(s) are linked. "
+            "Delete those performances first."
+        )
+    with get_connection() as conn:
+        conn.execute("DELETE FROM swimmers WHERE id = ?", (swimmer_id,))
