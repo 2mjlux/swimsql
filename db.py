@@ -987,3 +987,13 @@ def delete_swimmer(swimmer_id):
         )
     with get_connection() as conn:
         conn.execute("DELETE FROM swimmers WHERE id = ?", (swimmer_id,))
+
+
+def delete_performance_metres(performance_metres_id):
+    """
+    Delete a performance in a metres pool.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM performances_metres WHERE id = ?", (performance_metres_id,)
+        )
