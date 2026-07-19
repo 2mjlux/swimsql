@@ -997,3 +997,31 @@ def delete_performance_metres(performance_metres_id):
         conn.execute(
             "DELETE FROM performances_metres WHERE id = ?", (performance_metres_id,)
         )
+
+
+def delete_performance_yards(performance_yards_id):
+    """
+    Delete a performance in a yards pool.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM performances_yards WHERE id = ?", (performance_yards_id,)
+        )
+
+
+def delete_meet(meet_id):
+    """
+    Delete a swimm meet.
+    Raises a ValueError if the meet has linked performances in metres or yards.
+    """
+    count = count_performances_for_meet(meet_id)
+    if count > 0:
+        raise ValueError(
+            f"Cannot delete this meet: {count} performance(s) are linked. "
+            "Delete those performaces first."
+        )
+    with get_connection() as conn:
+        conn.execute("DELETE FROM meets WHERE id = ?", (meet_id,)
+        )
+
+
