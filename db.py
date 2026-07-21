@@ -1021,8 +1021,7 @@ def delete_meet(meet_id):
             "Delete those performances first."
         )
     with get_connection() as conn:
-        conn.execute("DELETE FROM meets WHERE id = ?", (meet_id,)
-        )
+        conn.execute("DELETE FROM meets WHERE id = ?", (meet_id,))
 
 
 def delete_club(club_id):
@@ -1037,5 +1036,15 @@ def delete_club(club_id):
             "Delete or reassign those swimmers first."
         )
     with get_connection() as conn:
-        conn.execute("DELETE FROM clubs WHERE id = ?", (club_id,)
+        conn.execute("DELETE FROM clubs WHERE id = ?", (club_id,))
+
+
+def update_club(club_id, name, country_id):
+    """
+    Update the details of a club.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE clubs SET name = ?, country_id = ? WHERE id = ?",
+            (name, country_id, club_id),
         )
