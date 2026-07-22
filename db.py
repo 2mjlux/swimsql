@@ -373,8 +373,9 @@ def time_to_cs(time_str):
         else:
             seconds_part, hundredths_part = time_str.split(".")
         if len(hundredths_part) != 2:
-            raise ValueError("Centiseconds must be exactly two digits "
-                             "(e.g. 28.74 not 28.7).")
+            raise ValueError(
+                "Centiseconds must be exactly two digits " "(e.g. 28.74 not 28.7)."
+            )
         if ":" in time_str:
             cs = (
                 int(minutes_part) * 6000
@@ -939,11 +940,11 @@ def count_performances_for_swimmer(swimmer_id):
         row_m = conn.execute(
             "SELECT COUNT(*) FROM performances_metres WHERE swimmer_id = ?",
             (swimmer_id,),
-            ).fetchone()
+        ).fetchone()
         row_y = conn.execute(
             "SELECT COUNT(*) FROM performances_yards WHERE swimmer_id = ?",
             (swimmer_id,),
-            ).fetchone()
+        ).fetchone()
         return row_m[0] + row_y[0]
 
 
@@ -955,11 +956,11 @@ def count_performances_for_meet(meet_id):
         row_m = conn.execute(
             "SELECT COUNT(*) FROM performances_metres WHERE meet_id = ?",
             (meet_id,),
-            ).fetchone()
+        ).fetchone()
         row_y = conn.execute(
             "SELECT COUNT(*) FROM performances_yards WHERE meet_id = ?",
             (meet_id,),
-            ).fetchone()
+        ).fetchone()
         return row_m[0] + row_y[0]
 
 
@@ -969,7 +970,8 @@ def count_swimmers_for_club(club_id):
     """
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT COUNT(*) FROM swimmers WHERE club_id = ?", (club_id,),
+            "SELECT COUNT(*) FROM swimmers WHERE club_id = ?",
+            (club_id,),
         ).fetchone()
         return row[0]
 
@@ -1047,4 +1049,46 @@ def update_club(club_id, name, country_id):
         conn.execute(
             "UPDATE clubs SET name = ?, country_id = ? WHERE id = ?",
             (name, country_id, club_id),
+        )
+
+
+def update_meet(meet_id, name, date_start, country_id, date_end, location, notes):
+    """
+    Update the details of a meet.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE meets SET name = ?, date_start = ?, country_id = ?, date_end = ?, "
+            "location = ?, notes = ? WHERE id = ?",
+            (name, date_start, country_id, date_end, location, notes, meet_id),
+        )
+
+
+def update_swimmer(
+    swimmer_id,
+    first_name,
+    middle_name,
+    last_name,
+    date_of_birth,
+    gender,
+    club_id,
+    country_id,
+):
+    """
+    Update the details of a swimmer.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE swimmers SET first_name = ?, middle_name = ?, last_name = ?, "
+            "date_of_birth = ?, gender = ?, club_id = ?, country_id = ? WHERE id = ?",
+            (
+                first_name,
+                middle_name,
+                last_name,
+                date_of_birth,
+                gender,
+                club_id,
+                country_id,
+                swimmer_id,
+            ),
         )
