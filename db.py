@@ -1092,3 +1092,51 @@ def update_swimmer(
                 swimmer_id,
             ),
         )
+
+
+def update_performance_metres(
+    performance_metres_id, time_cs, date, session, points, notes
+):
+    """
+    Update time, date, session, points and notes of a performance in a metres pool.
+    Swimmer, meet, discipline and relay details are not editable: changing them would
+    require re-running the full selection menus in cli.py, so a wrong entry is deleted
+    and re-entered instead.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE performances_metres SET time_cs = ?, date = ?, session = ?, "
+            "points = ?, notes = ? WHERE id = ?",
+            (
+                time_cs,
+                date,
+                session,
+                points,
+                notes,
+                performance_metres_id,
+            ),
+        )
+
+
+def update_performance_yards(
+    performance_yards_id, time_cs, date, session, points, notes
+):
+    """
+    Update time, date, session, points and notes of a performance in a yards pool.
+    Swimmer, meet, discipline and relay details are not editable: changing them would
+    require re-running the full selection menus in cli.py, so a wrong entry is deleted
+    and re-entered instead.
+    """
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE performances_yards SET time_cs = ?, date = ?, session = ?, "
+            "points = ?, notes = ? WHERE id = ?",
+            (
+                time_cs,
+                date,
+                session,
+                points,
+                notes,
+                performance_yards_id,
+            ),
+        )
