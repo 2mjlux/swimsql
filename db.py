@@ -570,7 +570,8 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        SELECT performances_metres.id,
+        swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
         performances_metres.points, performances_metres.date,
@@ -629,7 +630,8 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
     """
     with get_connection() as conn:
         query = """
-        SELECT swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
+        SELECT performances_yards.id,
+        swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.points, performances_yards.date,
