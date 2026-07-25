@@ -24,6 +24,15 @@ def prompt(label, optional=False):
     return value if value else None
 
 
+def prompt_keep(label, current):
+    """
+    Ask for a new value, showing the current one in brackets.
+    Returns the current value if the user presses Enter.
+    """
+    value = input(f"{label} [{current}]: ").strip()
+    return value if value else current
+
+
 def prompt_date(label, optional=False):
     """
     Ask the user for a date in YYYY-MM-DD format.
