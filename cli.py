@@ -590,3 +590,12 @@ def flow_export():
         filepath = Path.home() / f"{timestamp}_swimsql_export.xlsx"
         export.export_xlsx(filepath)
     print(f"  Export saved to: {filepath}")
+
+
+def flow_edit_club():
+    """
+    Function for the user to edit a club.
+    """
+    print("--- Edit Club ---")
+    club = search_from_list(db.list_clubs(), lambda cl: cl["name"], "Select club")
+    pass
