@@ -573,7 +573,9 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
         performances_metres.points, performances_metres.date,
-        performances_metres.session, performances_metres.notes
+        performances_metres.session, performances_metres.notes,
+        performances_metres.is_relay_leg, performances_metres.leg_number,
+        performances_metres.is_mixed_mf
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -607,7 +609,8 @@ def list_all_performances_metres():
         meets.date_start, disciplines_metres.name AS discipline,
         performances_metres.time_cs, performances_metres.points,
         performances_metres.date, performances_metres.session,
-        performances_metres.notes
+        performances_metres.notes, performances_metres.is_relay_leg,
+        performances_metres.leg_number, performances_metres.is_mixed_mf
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -632,7 +635,9 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.points, performances_yards.date,
-        performances_yards.session, performances_yards.notes
+        performances_yards.session, performances_yards.notes,
+        performances_yards.is_relay_leg, performances_yards.leg_number,
+        performances_yards.is_mixed_mf
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
@@ -665,7 +670,9 @@ def list_all_performances_yards():
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.points, performances_yards.date,
-        performances_yards.session, performances_yards.notes
+        performances_yards.session, performances_yards.notes,
+        performances_yards.is_relay_leg, performances_yards.leg_number,
+        performances_yards.is_mixed_mf
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
