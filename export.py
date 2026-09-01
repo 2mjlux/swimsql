@@ -86,6 +86,21 @@ def _get_export_data():
     }
 
 
+def _discipline_label(row):
+    """
+    Return the discipline name, with leg information appended for relay legs.
+    Indication whether the relay is mixed (m/f) appended if applicable.
+    Team results show the plain discipline name.
+    """
+    label = row["discipline"]
+    if row["is_relay_leg"]:
+        leg = f"leg {row['leg_number']}"
+        if row["is_mixed_mf"]:
+            leg += ", mixed"
+        label = f"{label} ({leg})"
+    return label
+
+
 def export_ods(filepath):
     """
     Export all data to ODS format.
@@ -103,7 +118,7 @@ def export_ods(filepath):
             row["pool"],
             row["meet"],
             row["date_start"],
-            row["discipline"],
+            _discipline_label(row),
             db.cs_to_time(row["time_cs"]),
             row["points"] if row["points"] is not None else "",
             row["date"],
@@ -120,7 +135,7 @@ def export_ods(filepath):
             row["swimmer"],
             row["meet"],
             row["date_start"],
-            row["discipline"],
+            _discipline_label(row),
             db.cs_to_time(row["time_cs"]),
             row["points"] if row["points"] is not None else "",
             row["date"],
@@ -180,7 +195,7 @@ def export_xlsx(filepath):
             row["pool"],
             row["meet"],
             row["date_start"],
-            row["discipline"],
+            _discipline_label(row),
             db.cs_to_time(row["time_cs"]),
             row["points"] if row["points"] is not None else "",
             row["date"],
@@ -197,7 +212,7 @@ def export_xlsx(filepath):
             row["swimmer"],
             row["meet"],
             row["date_start"],
-            row["discipline"],
+            _discipline_label(row),
             db.cs_to_time(row["time_cs"]),
             row["points"] if row["points"] is not None else "",
             row["date"],

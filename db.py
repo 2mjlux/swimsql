@@ -703,6 +703,7 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
         performances_metres.discipline_metres_id = disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
         WHERE 1=1
+        AND disciplines_metres.is_relay = 0
         """
         params = []
         if swimmer_id is not None:
@@ -741,6 +742,7 @@ def get_all_personal_bests_metres():
         JOIN disciplines_metres ON
         performances_metres.discipline_metres_id = disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
+        WHERE disciplines_metres.is_relay = 0
         GROUP BY performances_metres.swimmer_id,
             performances_metres.discipline_metres_id
         ORDER BY swimmers.last_name, swimmers.first_name, pools.name,
@@ -767,6 +769,7 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
         WHERE 1=1
+        AND disciplines_yards.is_relay = 0
         """
         params = []
         if swimmer_id is not None:
@@ -800,6 +803,7 @@ def get_all_personal_bests_yards():
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
+        WHERE disciplines_yards.is_relay = 0
         GROUP BY performances_yards.swimmer_id,
             performances_yards.discipline_yards_id
         ORDER BY swimmers.last_name, swimmers.first_name, disciplines_yards.name
