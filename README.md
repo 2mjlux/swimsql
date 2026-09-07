@@ -117,7 +117,7 @@ SwimSQL uses a local SQLite database with the following structure:
 
 - Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
 - Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
-- Individual relay leg times are recorded directly in `performances_metres` and `performances_yards` with `is_relay_leg`, `leg_number` and `is_mixed_mf` fields. Relay legs are displayed with a suffix, e.g. `4x50m Medley Relay (leg 1, mixed)`.
+- Individual relay leg times are recorded directly in `performances_metres` and `performances_yards` with `is_relay_leg`, `leg_number` and `is_mixed_mf` fields. Relay legs are displayed with the leg number (and possibly `mixed` for a mixed relay) in brackets, e.g. `4x50m Medley Relay (leg 1, mixed)`.
 
 ### Relationships (diagram)
 
