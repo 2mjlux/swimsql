@@ -27,6 +27,23 @@ def test_db(monkeypatch):
     temp_path.unlink(missing_ok=True)
 
 
+# --- Helpers to select individual (non-relay) disciplines ---
+
+def individual_disciplines_metres():
+    """
+    Return only non-relay metres disciplines.
+    Personal bests exclude relays, so tests must pick individual events.
+    """
+    return [d for d in db.list_disciplines_metres() if d["is_relay"] == 0]
+
+
+def individual_disciplines_yards():
+    """
+    Return only non-relay yards disciplines.
+    """
+    return [d for d in db.list_disciplines_yards() if d["is_relay"] == 0]
+
+
 # --- Time helper tests (no database needed) ---
 
 def test_cs_to_time_seconds_only():
@@ -132,7 +149,7 @@ def test_personal_best_returns_fastest(test_db):
         "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
     )
     meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
-    disciplines = db.list_disciplines_metres()
+    disciplines = individual_disciplines_metres()
     discipline_id = disciplines[0]["id"]
     # add two performances — second is faster
     db.add_performance_metres(
@@ -145,6 +162,98 @@ def test_personal_best_returns_fastest(test_db):
     bests = db.get_personal_bests_metres(swimmer_id)
     assert len(bests) == 1
     assert bests[0]["best_cs"] == 6000
+
+
+def test_relays_excluded_from_personal_bests_metres(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    relay = [d for d in disciplines if d["is_relay"] == 1][0]
+    individual = [d for d in disciplines if d["is_relay"] == 0][0]
+    # a relay team result and an individual performance
+    db.add_performance_metres(
+        swimmer_id, meet_id, relay["id"], 15466, "2026-01-01"
+    )
+    db.add_performance_metres(
+        swimmer_id, meet_id, individual["id"], 6345, "2026-01-01"
+    )
+    # only the individual discipline appears in personal bests
+    bests = db.get_personal_bests_metres(swimmer_id)
+    assert len(bests) == 1
+    assert bests[0]["best_cs"] == 6345
+
+
+def test_relays_excluded_from_personal_bests_yards(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_yards()
+    relay = [d for d in disciplines if d["is_relay"] == 1][0]
+    individual = [d for d in disciplines if d["is_relay"] == 0][0]
+    # a relay team result and an individual performance
+    db.add_performance_yards(
+        swimmer_id, meet_id, relay["id"], 14200, "2026-01-01"
+    )
+    db.add_performance_yards(
+        swimmer_id, meet_id, individual["id"], 5500, "2026-01-01"
+    )
+    # only the individual discipline appears in personal bests
+    bests = db.get_personal_bests_yards(swimmer_id)
+    assert len(bests) == 1
+    assert bests[0]["best_cs"] == 5500
+
+
+def test_relays_excluded_from_all_personal_bests_metres(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_metres()
+    relay = [d for d in disciplines if d["is_relay"] == 1][0]
+    individual = [d for d in disciplines if d["is_relay"] == 0][0]
+    db.add_performance_metres(
+        swimmer_id, meet_id, relay["id"], 15466, "2026-01-01"
+    )
+    db.add_performance_metres(
+        swimmer_id, meet_id, individual["id"], 6345, "2026-01-01"
+    )
+    bests = db.get_all_personal_bests_metres()
+    assert len(bests) == 1
+    assert bests[0]["best_cs"] == 6345
+
+
+def test_relays_excluded_from_all_personal_bests_yards(test_db):
+    countries = db.list_countries()
+    country_id = countries[0]["id"]
+    club_id = db.add_club("Test Club", country_id)
+    swimmer_id = db.add_swimmer(
+        "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
+    )
+    meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
+    disciplines = db.list_disciplines_yards()
+    relay = [d for d in disciplines if d["is_relay"] == 1][0]
+    individual = [d for d in disciplines if d["is_relay"] == 0][0]
+    db.add_performance_yards(
+        swimmer_id, meet_id, relay["id"], 14200, "2026-01-01"
+    )
+    db.add_performance_yards(
+        swimmer_id, meet_id, individual["id"], 5500, "2026-01-01"
+    )
+    bests = db.get_all_personal_bests_yards()
+    assert len(bests) == 1
+    assert bests[0]["best_cs"] == 5500
 
 
 # --- Points tests ---
@@ -198,7 +307,7 @@ def test_personal_best_yards_returns_fastest(test_db):
         "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
     )
     meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
-    disciplines = db.list_disciplines_yards()
+    disciplines = individual_disciplines_yards()
     discipline_id = disciplines[0]["id"]
     db.add_performance_yards(
         swimmer_id, meet_id, discipline_id, 5500, "2026-01-01"
@@ -493,7 +602,7 @@ def test_get_all_personal_bests_metres(test_db):
     # two different meets
     meet_id_1 = db.add_meet("Meet One", "2026-01-01", country_id)
     meet_id_2 = db.add_meet("Meet Two", "2026-02-01", country_id)
-    disciplines = db.list_disciplines_metres()
+    disciplines = individual_disciplines_metres()
     discipline_id = disciplines[0]["id"]
     # slower time at first meet
     db.add_performance_metres(
@@ -518,7 +627,7 @@ def test_get_all_personal_bests_yards(test_db):
     # two different meets
     meet_id_1 = db.add_meet("Meet One", "2026-01-01", country_id)
     meet_id_2 = db.add_meet("Meet Two", "2026-02-01", country_id)
-    disciplines = db.list_disciplines_yards()
+    disciplines = individual_disciplines_yards()
     discipline_id = disciplines[0]["id"]
     # faster time at first meet
     db.add_performance_yards(
@@ -542,7 +651,7 @@ def test_personal_best_duplicate_time(test_db):
     )
     meet_id_1 = db.add_meet("Meet One", "2026-01-01", country_id)
     meet_id_2 = db.add_meet("Meet Two", "2026-02-01", country_id)
-    disciplines = db.list_disciplines_metres()
+    disciplines = individual_disciplines_metres()
     discipline_id = disciplines[0]["id"]
     # same time at two different meets
     db.add_performance_metres(
@@ -591,7 +700,7 @@ def test_get_personal_bests_metres_discipline_filter(test_db):
         "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
     )
     meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
-    disciplines = db.list_disciplines_metres()
+    disciplines = individual_disciplines_metres()
     discipline_id_1 = disciplines[0]["id"]
     discipline_id_2 = disciplines[1]["id"]
     db.add_performance_metres(
@@ -606,6 +715,7 @@ def test_get_personal_bests_metres_discipline_filter(test_db):
     assert len(bests) == 1
     assert bests[0]["best_cs"] == 6345
 
+
 def test_get_personal_bests_yards_discipline_filter(test_db):
     countries = db.list_countries()
     country_id = countries[0]["id"]
@@ -614,7 +724,7 @@ def test_get_personal_bests_yards_discipline_filter(test_db):
         "Alice", None, "Smith", "2010-01-01", "F", club_id, country_id
     )
     meet_id = db.add_meet("Test Meet", "2026-01-01", country_id)
-    disciplines = db.list_disciplines_yards()
+    disciplines = individual_disciplines_yards()
     discipline_id_1 = disciplines[0]["id"]
     discipline_id_2 = disciplines[1]["id"]
     db.add_performance_yards(
@@ -643,7 +753,7 @@ def test_get_personal_bests_metres_pool_filter(test_db):
     pools = db.list_pools_metres()
     pool_id_1 = pools[0]["id"]  # Short Course 25 Metres
     pool_id_2 = pools[1]["id"]  # Long Course 50 Metres
-    disciplines = db.list_disciplines_metres()
+    disciplines = individual_disciplines_metres()
     disc_pool_1 = [d for d in disciplines if d["pool_id"] == pool_id_1][0]
     disc_pool_2 = [d for d in disciplines if d["pool_id"] == pool_id_2][0]
     db.add_performance_metres(

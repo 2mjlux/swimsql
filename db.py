@@ -575,7 +575,9 @@ def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=No
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
         performances_metres.points, performances_metres.date,
-        performances_metres.session, performances_metres.notes
+        performances_metres.session, performances_metres.notes,
+        performances_metres.is_relay_leg, performances_metres.leg_number,
+        performances_metres.is_mixed_mf
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -609,7 +611,8 @@ def list_all_performances_metres():
         meets.date_start, disciplines_metres.name AS discipline,
         performances_metres.time_cs, performances_metres.points,
         performances_metres.date, performances_metres.session,
-        performances_metres.notes
+        performances_metres.notes, performances_metres.is_relay_leg,
+        performances_metres.leg_number, performances_metres.is_mixed_mf
         FROM performances_metres
         JOIN swimmers ON performances_metres.swimmer_id = swimmers.id
         JOIN meets ON performances_metres.meet_id = meets.id
@@ -635,7 +638,9 @@ def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.points, performances_yards.date,
-        performances_yards.session, performances_yards.notes
+        performances_yards.session, performances_yards.notes,
+        performances_yards.is_relay_leg, performances_yards.leg_number,
+        performances_yards.is_mixed_mf
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
@@ -668,7 +673,9 @@ def list_all_performances_yards():
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
         performances_yards.points, performances_yards.date,
-        performances_yards.session, performances_yards.notes
+        performances_yards.session, performances_yards.notes,
+        performances_yards.is_relay_leg, performances_yards.leg_number,
+        performances_yards.is_mixed_mf
         FROM performances_yards
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN meets ON performances_yards.meet_id = meets.id
@@ -699,6 +706,7 @@ def get_personal_bests_metres(swimmer_id=None, discipline_metres_id=None, pool_i
         performances_metres.discipline_metres_id = disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
         WHERE 1=1
+        AND disciplines_metres.is_relay = 0
         """
         params = []
         if swimmer_id is not None:
@@ -737,6 +745,7 @@ def get_all_personal_bests_metres():
         JOIN disciplines_metres ON
         performances_metres.discipline_metres_id = disciplines_metres.id
         JOIN pools ON disciplines_metres.pool_id = pools.id
+        WHERE disciplines_metres.is_relay = 0
         GROUP BY performances_metres.swimmer_id,
             performances_metres.discipline_metres_id
         ORDER BY swimmers.last_name, swimmers.first_name, pools.name,
@@ -763,6 +772,7 @@ def get_personal_bests_yards(swimmer_id=None, discipline_yards_id=None):
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
         WHERE 1=1
+        AND disciplines_yards.is_relay = 0
         """
         params = []
         if swimmer_id is not None:
@@ -796,6 +806,7 @@ def get_all_personal_bests_yards():
         JOIN swimmers ON performances_yards.swimmer_id = swimmers.id
         JOIN disciplines_yards ON
         performances_yards.discipline_yards_id = disciplines_yards.id
+        WHERE disciplines_yards.is_relay = 0
         GROUP BY performances_yards.swimmer_id,
             performances_yards.discipline_yards_id
         ORDER BY swimmers.last_name, swimmers.first_name, disciplines_yards.name

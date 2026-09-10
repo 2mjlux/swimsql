@@ -1,6 +1,6 @@
 # SwimSQL
 
-> SwimSQL v1.0.0 is released. 40 automated tests, 98% code coverage.
+> SwimSQL v1.0.0 is released. 44 automated tests, 98% code coverage.
 
 A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
@@ -11,9 +11,10 @@ SwimSQL lets you record and consult a swimmer's competition results from the ter
 
 **Features:**
 - Record meets and performances by discipline
+- Record relay team results and individual relay leg times
 - Optionally record points associated with the performance
 - Filter results by discipline and year
-- View personal bests across all disciplines
+- View personal bests across all individual disciplines
 - Export results to ODS or XLSX for sharing
 
 Disciplines are pre-loaded at first run and cover all standard individual events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley) in 25, 50, and 33 metre pools and the 25 yard pool, plus relay events.
@@ -91,6 +92,8 @@ format. The export contains four sheets:
 
 Athletes, family and friends can filter and sort the data using Collabora Online, LibreOffice, OpenOffice, or Excel.
 
+Relay leg times are labelled in the export: a leg shows for example as `4x50m Medley Relay (leg 1)`, a team result shows the plain discipline name.
+
 
 ## Database schema
 
@@ -114,7 +117,7 @@ SwimSQL uses a local SQLite database with the following structure:
 
 - Times are stored as integers in **centiseconds** (hundredths of a second). A time of 1:23.45 is stored as 8345.
 - Metres and yards events are stored in separate tables as they represent different measurement systems with different standard distances.
-- Individual relay leg times are recorded directly in `performances_metres` and `performances_yards` with `is_relay_leg`, `leg_number` and `is_mixed_mf` fields.
+- Individual relay leg times are recorded directly in `performances_metres` and `performances_yards` with `is_relay_leg`, `leg_number` and `is_mixed_mf` fields. Relay legs are displayed with the leg number (and possibly `mixed` for a mixed relay) in brackets, e.g. `4x50m Medley Relay (leg 1, mixed)`.
 
 ### Relationships (diagram)
 
@@ -167,7 +170,7 @@ SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
 - Complete relay team breakdown (recording all four swimmers' leg times linked to one team result) is designed but deferred to v2. Individual relay leg times can be recorded via the performances tables.
 
 
-## Testing for version 1.1.0
+## Testing
 
 SwimSQL uses pytest for automated testing of the database layer (`db.py`), which is the most critical module - all data is stored and retrieved there.
 
@@ -182,10 +185,11 @@ SwimSQL uses pytest for automated testing of the database layer (`db.py`), which
 - **Points** - stored and retrieved correctly, `None` when not entered
 - **Swimmer names** - with and without middle name
 - **Data integrity** - foreign key constraints enforced
+- **Relay exclusion** - relay disciplines do not appear in personal bests
 
 ### Coverage
 
-40 automated tests covering 98% of `db.py` statements. The remaining 2% are seeding guard clauses (early returns when data is already seeded) that only execute when the database is pre-populated - not reachable from a fresh temporary test database.
+44 automated tests covering 98% of `db.py` statements. The remaining 2% are seeding guard clauses (early returns when data is already seeded) that only execute when the database is pre-populated - not reachable from a fresh temporary test database.
 
 `cli.py` and `export.py` were verified through manual end-to-end testing of the main menu options before release. Metres performances, personal bests and both export formats were fully tested. Yards performances follow the same code path and are covered by the automated test suite.
 
@@ -271,9 +275,44 @@ Type the number of your choice and follow the prompts.
 
 Enter points as published on the official result sheet.
 
-### Data storage
 
-SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run. To back up your data, copy this file to a safe location. To migrate to a new machine, copy it to the same path on the new machine.
+### Recording relays
+
+A relay requires two or three separate entries:
+
+**1. The team result**: select the relay discipline, answer `n` to "individual relay leg time?", enter the team's total time and the team's points.
+
+**2. The swimmer's leg**: same discipline and meet, answer `y`, enter the leg number (1-4), whether the relay was mixed, and the swimmer's split time. Legs have no points of their own.
+
+**3. Only for an eligible leg 1**: under European Aquatics rules, a standing-start leg 1 in a non-mixed relay may count as an individual time. To have it compete for a personal best, enter it a third time under the **individual** discipline it was actually swum in (e.g. `50m Backstroke` for the backstroke leg of a medley relay), with a note recording its origin. Legs 2-4 are flying starts and are never eligible.
+
+For medley relays, select `Medley` as the stroke - not the stroke of the leg. Leg order is 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle.
+
+
+### Personal bests
+
+Personal bests cover individual disciplines only. Relay disciplines are excluded, because a relay group would otherwise mix team totals with individual leg splits and report whichever number happens to be smaller. A leg 1 time that is eligible as an individual record should be entered under its individual discipline (see Recording relays above).
+
+
+### Data storage and backup
+
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run.
+
+All your data lives in that single file. To back it up:
+
+```bash
+cp ~/.swimsql/swimsql.db ~/.swimsql/$(date +%Y%m%d)-swimsql-backup.db
+```
+
+This creates a dated copy, e.g. `20260903-swimsql-backup.db`. Back up after each data entry session, and keep a copy outside your home directory (external drive, cloud storage).
+
+To restore a backup, close SwimSQL and copy it back:
+
+```bash
+cp ~/.swimsql/20260903-swimsql-backup.db ~/.swimsql/swimsql.db
+```
+
+To migrate to a new machine, copy the database file to the same path there.
 
 
 ## License

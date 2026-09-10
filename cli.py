@@ -471,19 +471,29 @@ def flow_list_performances():
     if not results:
         print("  No performances found.")
         return
-    rows = [
-        [
-            r["swimmer"],
-            r["meet"],
-            r["date"],
-            r["discipline"],
-            db.cs_to_time(r["time_cs"]),
-            r["points"] if r["points"] is not None else "",
-            r["session"] or "",
-            r["notes"] or "",
-        ]
-        for r in results
-    ]
+    rows = []
+    for r in results:
+        # build discipline_label in order to add leg information
+        # to the display of relay results
+        discipline_label = r["discipline"]
+        if r["is_relay_leg"]:
+            leg = f"leg {r['leg_number']}"
+            if r["is_mixed_mf"]:
+                leg += ", mixed"
+            discipline_label = f"{discipline_label} ({leg})"
+        rows.append(
+            [
+                r["swimmer"],
+                r["meet"],
+                r["date"],
+                discipline_label,
+                db.cs_to_time(r["time_cs"]),
+                r["points"] if r["points"] is not None else "",
+                r["session"] or "",
+                r["notes"] or "",
+            ]
+        )
+
     headers = ["Swimmer", "Meet", "Date", "Discipline", "Time", "Points", "Session",
                "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
