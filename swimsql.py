@@ -52,6 +52,8 @@ MENU = """
 
 def main():
     os.system("clear")
+    if "dev" in str(db.DB_PATH):
+        print(f" *** DEVELOPMENT DATABASE: {db.DB_PATH} ***\n")
     db.init_db()
     print(WELCOME)
     input("  Press Enter to continue...")
