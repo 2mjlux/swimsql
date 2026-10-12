@@ -5,7 +5,6 @@
 
 import db
 import export
-import sys
 from tabulate import tabulate
 from pathlib import Path
 from datetime import datetime
@@ -609,3 +608,91 @@ def flow_edit_club():
     print("--- Edit Club ---")
     club = search_from_list(db.list_clubs(), lambda cl: cl["name"], "Select club")
     pass
+
+
+def flow_edit_swimmer():
+    print("  Not yet implemented.")
+
+
+def flow_edit_meet():
+    print("  Not yet implemented.")
+
+
+def flow_edit_performance():
+    print("  Not yet implemented.")
+
+
+def flow_edit_menu():
+    """
+    Show the edit submenu and dispatch to the chosen edit flow.
+    """
+    submenu = """
+--- Edit ---
+  1. Edit club
+  2. Edit swimmer
+  3. Edit meet
+  4. Edit performance
+  0. Back to main menu
+"""
+    actions = {
+        "1": flow_edit_club,
+        "2": flow_edit_swimmer,
+        "3": flow_edit_meet,
+        "4": flow_edit_performance,
+    }
+    while True:
+        print(submenu)
+        choice = input("  Enter the number of your menu choice: ").strip()
+        if choice == "0":
+            return
+        action = actions.get(choice)
+        if action:
+            action()
+            return
+        print("  Invalid menu choice, please try again.")
+
+
+def flow_delete_club():
+    print("  Not yet implemented.")
+
+
+def flow_delete_swimmer():
+    print("  Not yet implemented.")
+
+
+def flow_delete_meet():
+    print("  Not yet implemented.")
+
+
+def flow_delete_performance():
+    print("  Not yet implemented.")
+
+
+def flow_delete_menu():
+    """
+    Show the delete submenu and dispatch to the chosen delete flow.
+    """
+    submenu = """
+--- Delete ---
+  1. Delete club
+  2. Delete swimmer
+  3. Delete meet
+  4. Delete performance
+  0. Back to main menu
+"""
+    actions = {
+        "1": flow_delete_club,
+        "2": flow_delete_swimmer,
+        "3": flow_delete_meet,
+        "4": flow_delete_performance,
+    }
+    while True:
+        print(submenu)
+        choice = input("  Enter the number of your menu choice: ").strip()
+        if choice == "0":
+            return
+        action = actions.get(choice)
+        if action:
+            action()
+            return
+        print("  Invalid menu choice, please try again.")

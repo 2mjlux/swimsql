@@ -46,6 +46,8 @@ MENU = """
   5. List performances
   6. Personal bests
   7. Export
+  8. Edit
+  9. Delete
   0. Quit
 """
 
@@ -67,6 +69,8 @@ def main():
         "5": cli.flow_list_performances,
         "6": cli.flow_personal_bests,
         "7": cli.flow_export,
+        "8": cli.flow_edit_menu,
+        "9": cli.flow_delete_menu,
     }
 
     while True:
