@@ -202,6 +202,17 @@ pytest --cov=db --cov-report=term-missing     # with coverage report
 ```
 
 
+## Development database
+
+When developing features that modify or delete data, point `DB_PATH` in `db.py` at a separate database so test runs cannot touch real data:
+
+```python
+DB_PATH = Path.home() / ".swimsql" / "swimsql-dev.db"
+```
+
+`main()` in `swimsql.py` prints a warning at startup whenever the path contains "dev", so you always know which database you are using. **Revert the path before merging.**
+
+
 ## Requirements
 
 - Python 3.10 or higher

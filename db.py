@@ -419,11 +419,20 @@ def add_meet(name, date_start, country_id, date_end=None, location=None, notes=N
 
 def list_meets():
     """
-    List all meets ordered by date_start descending (most recent first).
+    List all meets with their country, ordered by date_start descending (most recent
+    first).
     """
     with get_connection() as conn:
         listing = conn.execute(
-            """SELECT * FROM meets ORDER BY date_start DESC"""
+            """
+                SELECT
+                    meets.id, meets.name, meets.date_start, meets.date_end,
+                    meets.location, meets.country_id, meets.notes,
+                    countries.name AS country
+                FROM meets
+                JOIN countries ON meets.country_id = countries.id
+                ORDER BY date_start DESC
+            """
         ).fetchall()
         return listing
 
@@ -897,9 +906,10 @@ def list_clubs():
     """
     with get_connection() as conn:
         query = """
-        SELECT *
+        SELECT clubs.id, clubs.name, clubs.country_id, countries.name AS country
         FROM clubs
-        ORDER BY name
+        JOIN countries ON clubs.country_id = countries.id
+        ORDER BY clubs.name
         """
         listing = conn.execute(query).fetchall()
         return listing

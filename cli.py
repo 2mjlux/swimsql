@@ -601,13 +601,81 @@ def flow_export():
     print(f"  Export saved to: {filepath}")
 
 
+def flow_list_swimmers():
+    """
+    List all swimmers with club and nationality.
+    """
+    print("--- List Swimmers ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    rows = [
+        [s["name"], s["date_of_birth"], s["gender"], s["club"], s["nationality"]]
+        for s in swimmers
+    ]
+    headers = ["Swimmer", "Date of birth", "Gender", "Club", "Nationality"]
+    print(tabulate(rows, headers=headers, tablefmt="github"))
+
+
+def flow_list_clubs():
+    """
+    List all clubs with name and country.
+    """
+    print("--- List Clubs ---")
+    clubs = db.list_clubs()
+    if not clubs:
+        print("  No clubs found.")
+        return
+    rows = [
+        [c["name"], c["country"]]
+        for c in clubs
+    ]
+    headers = ["Club", "Country"]
+    print(tabulate(rows, headers=headers, tablefmt="github"))
+
+
+def flow_list_meets():
+    """
+    List all swimmers with club and nationality.
+    """
+    print("--- List Swimmers ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    rows = [
+        [s["name"], s["date_of_birth"], s["gender"], s["club"], s["nationality"]]
+        for s in swimmers
+    ]
+    headers = ["Swimmer", "Date of birth", "Gender", "Club", "Nationality"]
+    print(tabulate(rows, headers=headers, tablefmt="github"))
+
+
 def flow_edit_club():
     """
     Function for the user to edit a club.
     """
     print("--- Edit Club ---")
-    club = search_from_list(db.list_clubs(), lambda cl: cl["name"], "Select club")
-    pass
+    clubs = db.list_clubs()
+    if not clubs:
+        print("  No clubs found.")
+        return
+    club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
+    if club is None:
+        return
+    print(" Press Enter to keep the current value shown in brackets.")
+    name = prompt_keep("Club name", club["name"])
+    country_id = club["country_id"]
+    if confirm("Change country?"):
+        country = search_from_list(
+            db.list_countries(), lambda c: c["name"], "Select country"
+        )
+        if country is None:
+            return
+        country_id = country["id"]
+    db.update_club(club["id"], name, country_id)
+    print(f" Club '{name}' successfully updated!")
 
 
 def flow_edit_swimmer():
