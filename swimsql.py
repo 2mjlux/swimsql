@@ -48,6 +48,7 @@ MENU = """
   7. Export
   8. Edit
   9. Delete
+  L. Lists
   0. Quit
 """
 
@@ -71,11 +72,14 @@ def main():
         "7": cli.flow_export,
         "8": cli.flow_edit_menu,
         "9": cli.flow_delete_menu,
+        "L": cli.flow_lists_menu,
     }
 
     while True:
         print(MENU)
-        choice = input("  Enter the number of your menu choice: ").strip()
+        choice = (
+            input("  Enter the number or letter of your menu choice: ").strip().upper()
+        )
         if choice == "0":
             print("  Goodbye!")
             sys.exit(0)

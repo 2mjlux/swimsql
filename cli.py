@@ -493,8 +493,16 @@ def flow_list_performances():
             ]
         )
 
-    headers = ["Swimmer", "Meet", "Date", "Discipline", "Time", "Points", "Session",
-               "Notes"]
+    headers = [
+        "Swimmer",
+        "Meet",
+        "Date",
+        "Discipline",
+        "Time",
+        "Points",
+        "Session",
+        "Notes",
+    ]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
@@ -570,8 +578,7 @@ def flow_personal_bests():
                         perf["notes"] or "",
                     ]
                 )
-    headers = ["Discipline", "Best Time", "Points", "Date", "Session", "Meet",
-               "Notes"]
+    headers = ["Discipline", "Best Time", "Points", "Date", "Session", "Meet", "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
@@ -627,29 +634,61 @@ def flow_list_clubs():
     if not clubs:
         print("  No clubs found.")
         return
-    rows = [
-        [c["name"], c["country"]]
-        for c in clubs
-    ]
+    rows = [[c["name"], c["country"]] for c in clubs]
     headers = ["Club", "Country"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
 def flow_list_meets():
     """
-    List all swimmers with club and nationality.
+    List all meets with name, start date, end date, location, country and notes.
     """
-    print("--- List Swimmers ---")
-    swimmers = db.list_swimmers()
-    if not swimmers:
-        print("  No swimmers found.")
+    print("--- List Meets ---")
+    meets = db.list_meets()
+    if not meets:
+        print("  No meets found.")
         return
     rows = [
-        [s["name"], s["date_of_birth"], s["gender"], s["club"], s["nationality"]]
-        for s in swimmers
+        [
+            m["name"],
+            m["date_start"],
+            m["date_end"] or "",
+            m["location"] or "",
+            m["country"],
+            m["notes"] or "",
+        ]
+        for m in meets
     ]
-    headers = ["Swimmer", "Date of birth", "Gender", "Club", "Nationality"]
+    headers = ["Meet", "Start date", "End date", "Location", "Country", "Notes"]
     print(tabulate(rows, headers=headers, tablefmt="github"))
+
+
+def flow_lists_menu():
+    """
+    Show the lists submenu and dispatch to the chosen listing flow.
+    """
+    submenu = """
+--- Lists ---
+  1. List swimmers
+  2. List clubs
+  3. List meets
+  0. Back to main menu
+"""
+    actions = {
+        "1": flow_list_swimmers,
+        "2": flow_list_clubs,
+        "3": flow_list_meets,
+    }
+    while True:
+        print(submenu)
+        choice = input("  Enter the number of your menu choice: ").strip()
+        if choice == "0":
+            return
+        action = actions.get(choice)
+        if action:
+            action()
+            return
+        print("  Invalid menu choice, please try again.")
 
 
 def flow_edit_club():
