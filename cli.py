@@ -263,7 +263,14 @@ def flow_add_meet():
         return
     country_id = country["id"]
     notes = prompt("Notes", optional=True)
-    db.add_meet(name, date_start, country_id, date_end, location, notes)
+    db.add_meet(
+        name=name,
+        date_start=date_start,
+        country_id=country_id,
+        date_end=date_end,
+        location=location,
+        notes=notes,
+    )
     print(f"  Meet '{name}' successfully added!")
 
 
@@ -750,7 +757,46 @@ def flow_edit_swimmer():
 
 
 def flow_edit_meet():
-    print("  Not yet implemented.")
+    """
+    Function for the user to edit a meet.
+    """
+    print("--- Edit Meet ---")
+    meets = db.list_meets()
+    if not meets:
+        print("  No meets found.")
+        return
+    meet = search_from_list(
+        meets, lambda m: f"{m['date_start']} - {m['name']}", "Select meet"
+    )
+    if meet is None:
+        return
+    print("  Press Enter to keep the current value shown in brackets.")
+    name = prompt_keep("Name", meet["name"])
+    date_start = prompt_keep_date("Start date", meet["date_start"])
+    date_end = prompt_keep_date("End date", meet["date_end"])
+    location = prompt_keep("City / venue", meet["location"])
+    notes = prompt_keep("Notes", meet["notes"])
+    country_id = meet["country_id"]
+    if confirm("Change country?"):
+        country = search_from_list(
+            db.list_countries(), lambda c: c["name"], "Select country"
+        )
+        if country is None:
+            return
+        country_id = country["id"]
+    if not confirm("Save these changes?"):
+        print("  Edit cancelled. No changes made.")
+        return
+    db.update_meet(
+        meet["id"],
+        name=name,
+        date_start=date_start,
+        country_id=country_id,
+        date_end=date_end,
+        location=location,
+        notes=notes,
+    )
+    print(f"  Meet '{name}' successfully updated!")
 
 
 def flow_edit_performance():
