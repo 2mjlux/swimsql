@@ -23,13 +23,45 @@ def prompt(label, optional=False):
     return value if value else None
 
 
+def _is_valid_date(value):
+    """
+    Return True if value is a date in YYYY-MM-DD format.
+    """
+    return (
+        len(value) == 10
+        and value[0:4].isdigit()
+        and value[4] == "-"
+        and value[5:7].isdigit()
+        and value[7] == "-"
+        and value[8:10].isdigit()
+    )
+
+
 def prompt_keep(label, current):
     """
     Ask for a new value, showing the current one in brackets.
     Returns the current value if the user presses Enter.
+    An empty current value is shown as a dash.
     """
-    value = input(f"{label} [{current}]: ").strip()
+    display = current if current is not None else "-"
+    value = input(f"{label} [{display}]: ").strip()
     return value if value else current
+
+
+def prompt_keep_date(label, current):
+    """
+    Ask for a new date in YYYY-MM-DD format, showing the current one in brackets.
+    Returns the current value if the user presses Enter.
+    An empty current value is shown as a dash.
+    """
+    display = current if current is not None else "-"
+    while True:
+        value = input(f"{label} (YYYY-MM-DD) [{display}]: ").strip()
+        if not value:
+            return current
+        if _is_valid_date(value):
+            return value
+        print("  Invalid date format. Please use YYYY-MM-DD (e.g. 2026-05-20).")
 
 
 def prompt_date(label, optional=False):
@@ -46,14 +78,7 @@ def prompt_date(label, optional=False):
                 return None
         else:
             date = input(f"{label} (YYYY-MM-DD): ").strip()
-        if (
-            len(date) == 10
-            and date[0:4].isdigit()
-            and date[4] == "-"
-            and date[5:7].isdigit()
-            and date[7] == "-"
-            and date[8:10].isdigit()
-        ):
+        if _is_valid_date(date):
             return date
         print(" Invalid date format. Please use YYYY-MM-DD (e.g. 2026-05-20).")
 
@@ -582,32 +607,6 @@ def flow_personal_bests():
     print(tabulate(rows, headers=headers, tablefmt="github"))
 
 
-def flow_export():
-    """
-    Export the data of the SwimSQL database into sheets of a spreadsheet software.
-    The user can choose between open document format (ods) or Microsoft Excel (xlsx).
-    The sheets created are:
-    - Performances Metres
-    - Performances Yards
-    - Personal Bests Metres
-    - Personal Bests Yards
-    """
-    print("--- Export ---")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    items = ["Open Document Format (ODS)", "Microsoft Excel (XLSX)"]
-    title = "Select export format (file will be saved to your home directory):"
-    export_format = select_from_list(items, lambda e: e, title)
-    if export_format is None:
-        return  # export cancelled
-    if export_format == "Open Document Format (ODS)":
-        filepath = Path.home() / f"{timestamp}_swimsql_export.ods"
-        export.export_ods(filepath)
-    else:
-        filepath = Path.home() / f"{timestamp}_swimsql_export.xlsx"
-        export.export_xlsx(filepath)
-    print(f"  Export saved to: {filepath}")
-
-
 def flow_list_swimmers():
     """
     List all swimmers with club and nationality.
@@ -691,6 +690,32 @@ def flow_lists_menu():
         print("  Invalid menu choice, please try again.")
 
 
+def flow_export():
+    """
+    Export the data of the SwimSQL database into sheets of a spreadsheet software.
+    The user can choose between open document format (ods) or Microsoft Excel (xlsx).
+    The sheets created are:
+    - Performances Metres
+    - Performances Yards
+    - Personal Bests Metres
+    - Personal Bests Yards
+    """
+    print("--- Export ---")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    items = ["Open Document Format (ODS)", "Microsoft Excel (XLSX)"]
+    title = "Select export format (file will be saved to your home directory):"
+    export_format = select_from_list(items, lambda e: e, title)
+    if export_format is None:
+        return  # export cancelled
+    if export_format == "Open Document Format (ODS)":
+        filepath = Path.home() / f"{timestamp}_swimsql_export.ods"
+        export.export_ods(filepath)
+    else:
+        filepath = Path.home() / f"{timestamp}_swimsql_export.xlsx"
+        export.export_xlsx(filepath)
+    print(f"  Export saved to: {filepath}")
+
+
 def flow_edit_club():
     """
     Function for the user to edit a club.
@@ -703,7 +728,7 @@ def flow_edit_club():
     club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
     if club is None:
         return
-    print(" Press Enter to keep the current value shown in brackets.")
+    print("  Press Enter to keep the current value shown in brackets.")
     name = prompt_keep("Club name", club["name"])
     country_id = club["country_id"]
     if confirm("Change country?"):
@@ -713,8 +738,11 @@ def flow_edit_club():
         if country is None:
             return
         country_id = country["id"]
+    if not confirm("Save these changes?"):
+        print("  Edit cancelled. No changes made.")
+        return
     db.update_club(club["id"], name, country_id)
-    print(f" Club '{name}' successfully updated!")
+    print(f"  Club '{name}' successfully updated!")
 
 
 def flow_edit_swimmer():
