@@ -201,7 +201,9 @@ def select_discipline_metres():
     if len(ultimate) == 1:
         return ultimate[0]  # only one option, no need to ask
     options = ["Individual", "Relay"]
-    selection = select_from_list(options, lambda o: o, "Individual or Relay?")
+    selection = select_from_list(
+        options, lambda o: o, "Is this an individual event or a relay event?"
+    )
     if selection is None:
         return None  # selection cancelled
     individual = [d for d in ultimate if d["is_relay"] == 0]
@@ -248,7 +250,9 @@ def select_discipline_yards():
     if len(ultimate) == 1:
         return ultimate[0]  # only one option, no need to ask
     options = ["Individual", "Relay"]
-    selection = select_from_list(options, lambda o: o, "Individual or Relay?")
+    selection = select_from_list(
+        options, lambda o: o, "Is this an individual event or a relay event?"
+    )
     if selection is None:
         return None  # selection cancelled
     individual = [d for d in ultimate if d["is_relay"] == 0]
@@ -274,6 +278,7 @@ def flow_add_meet():
         db.list_countries(), lambda c: c["name"], "Select country"
     )
     if country is None:
+        print("  Cancelled. No meet added.")
         return
     country_id = country["id"]
     notes = prompt("Notes", optional=True)
@@ -327,11 +332,14 @@ def flow_add_swimmer():
             flow_add_club()
             clubs = db.list_clubs()
             if not clubs:
+                print("  Cancelled. No swimmer added.")
                 return  # user cancelled club addition
         else:
+            print("  Cancelled. No swimmer added.")
             return
     club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
     if club is None:
+        print("  Cancelled. No swimmer added.")
         return
     club_id = club["id"]
 
@@ -340,6 +348,7 @@ def flow_add_swimmer():
         db.list_countries(), lambda c: c["name"], "Select country (nationality)"
     )
     if country is None:
+        print("  Cancelled. No swimmer added.")
         return
     country_id = country["id"]
 
@@ -373,6 +382,7 @@ def flow_add_club():
         db.list_countries(), lambda c: c["name"], "Select country"
     )
     if country is None:
+        print("  Cancelled. No club added.")
         return
     country_id = country["id"]
     db.add_club(name, country_id)
@@ -388,20 +398,24 @@ def flow_add_performance():
         db.list_swimmers(), lambda s: s["name"], "Select swimmer"
     )
     if swimmer is None:
+        print("  Cancelled. No performance added.")
         return
     swimmer_id = swimmer["id"]
     units = ["Metres", "Yards"]
     unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
     if unit is None:
+        print("  Cancelled. No performance added.")
         return
     if unit == "Metres":
         discipline = select_discipline_metres()
         if discipline is None:
+            print("  Cancelled. No performance added.")
             return
         discipline_metres_id = discipline["id"]
     else:
         discipline = select_discipline_yards()
         if discipline is None:
+            print("  Cancelled. No performance added.")
             return
         discipline_yards_id = discipline["id"]
 
@@ -410,7 +424,14 @@ def flow_add_performance():
     leg_number = None
     is_mixed_mf = 0
     if discipline["is_relay"]:
-        if confirm("Are you recording an individual relay leg time?"):
+        relay_options = ["The team's total time", "This swimmer's individual leg time"]
+        relay_choice = select_from_list(
+            relay_options, lambda o: o, "What are you recording?"
+        )
+        if relay_choice is None:
+            print("  Cancelled. No performance added.")
+            return  # selection cancelled
+        if relay_choice == relay_options[1]:
             is_relay_leg = 1
             # ask leg number
             while True:
@@ -426,6 +447,7 @@ def flow_add_performance():
         db.list_meets(), lambda m: f"{m['date_start']} - {m['name']}", "Select Meet"
     )
     if meet is None:
+        print("  Cancelled. No performance added.")
         return
     meet_id = meet["id"]
     date = prompt_date("Date of performance")
@@ -449,9 +471,16 @@ def flow_add_performance():
         except ValueError as e:
             print(f"  {e}")
     points = None
-    point_str = prompt("Points (optional, as published on result sheet)", optional=True)
-    if point_str and point_str.isdigit():
-        points = int(point_str)
+    while True:
+        point_str = prompt(
+            "Points (optional, as published on result sheet)", optional=True
+        )
+        if point_str is None:
+            break
+        if point_str.isdigit():
+            points = int(point_str)
+            break
+        print("  Points must be a positive whole number (integer). Please try again.")
     notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
@@ -763,6 +792,7 @@ def flow_edit_club():
             db.list_countries(), lambda c: c["name"], "Select country"
         )
         if country is None:
+            print("  Edit cancelled. No changes made.")
             return
         country_id = country["id"]
     if not confirm("Save these changes?"):
@@ -802,6 +832,7 @@ def flow_edit_meet():
             db.list_countries(), lambda c: c["name"], "Select country"
         )
         if country is None:
+            print("  Edit cancelled. No changes made.")
             return
         country_id = country["id"]
     if not confirm("Save these changes?"):
