@@ -170,8 +170,11 @@ def select_discipline_metres():
 
     # Note to user
     print(
-        "  Note: to record a medley relay leg, select 'Medley' stroke.\n"
-        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle."
+        "\n"
+        "  Note to the user regarding RELAYS:\n"
+        "  For relays, select the team's total distance (e.g. 400m for 4x100m).\n"
+        "  To record a medley relay leg, select 'Medley' stroke.\n"
+        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle.\n"
     )
 
     # Pick a stroke
@@ -185,7 +188,11 @@ def select_discipline_metres():
     # Pick a distance
     stroke_disciplines = [d for d in pool_disciplines if d["stroke"] == stroke]
     distances = sorted(set(d["distance"] for d in stroke_disciplines))
-    distance = select_from_list(distances, lambda d: f"{d}m", "Select distance")
+    distance = select_from_list(
+        distances,
+        lambda d: f"{d}m",
+        "Select distance (for relays, select the team's total distance)",
+    )
     if distance is None:
         return None  # selection cancelled
 
@@ -211,8 +218,11 @@ def select_discipline_yards():
 
     # Note to user
     print(
-        "  Note: to record a medley relay leg, select 'Medley' stroke.\n"
-        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle."
+        "\n"
+        "  Note to the user regarding RELAYS:\n"
+        "  For relays, select the team's total distance (e.g. 400y for 4x100y).\n"
+        "  To record a medley relay leg, select 'Medley' stroke.\n"
+        "  Leg order: 1-Backstroke, 2-Breaststroke, 3-Butterfly, 4-Freestyle.\n"
     )
 
     # Pick a stroke
@@ -225,7 +235,11 @@ def select_discipline_yards():
     # Pick a distance
     stroke_disciplines = [d for d in disciplines if d["stroke"] == stroke]
     distances = sorted(set(d["distance"] for d in stroke_disciplines))
-    distance = select_from_list(distances, lambda d: f"{d}y", "Select distance")
+    distance = select_from_list(
+        distances,
+        lambda d: f"{d}y",
+        "Select distance (for relays, select the team's total distance)",
+    )
     if distance is None:
         return None  # selection cancelled
 
@@ -331,7 +345,13 @@ def flow_add_swimmer():
 
     # call
     db.add_swimmer(
-        first_name, middle_name, last_name, date_of_birth, gender, club_id, country_id
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
+        date_of_birth=date_of_birth,
+        gender=gender,
+        club_id=club_id,
+        country_id=country_id,
     )
 
     # confirmation message
@@ -435,31 +455,31 @@ def flow_add_performance():
     notes = prompt("Here you can enter your notes", optional=True)
     if unit == "Metres":
         db.add_performance_metres(
-            swimmer_id,
-            meet_id,
-            discipline_metres_id,
-            time_cs,
-            date,
-            session,
-            is_relay_leg,
-            leg_number,
-            is_mixed_mf,
-            points,
-            notes,
+            swimmer_id=swimmer_id,
+            meet_id=meet_id,
+            discipline_metres_id=discipline_metres_id,
+            time_cs=time_cs,
+            date=date,
+            session=session,
+            is_relay_leg=is_relay_leg,
+            leg_number=leg_number,
+            is_mixed_mf=is_mixed_mf,
+            points=points,
+            notes=notes,
         )
     else:
         db.add_performance_yards(
-            swimmer_id,
-            meet_id,
-            discipline_yards_id,
-            time_cs,
-            date,
-            session,
-            is_relay_leg,
-            leg_number,
-            is_mixed_mf,
-            points,
-            notes,
+            swimmer_id=swimmer_id,
+            meet_id=meet_id,
+            discipline_yards_id=discipline_yards_id,
+            time_cs=time_cs,
+            date=date,
+            session=session,
+            is_relay_leg=is_relay_leg,
+            leg_number=leg_number,
+            is_mixed_mf=is_mixed_mf,
+            points=points,
+            notes=notes,
         )
     print(f"  Performance {time_str} successfully added!")
 
