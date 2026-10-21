@@ -101,6 +101,13 @@ def prompt_year(label, optional=False):
         print("  Invalid year format.  Please use YYYY (e.g. 2026).")
 
 
+def full_name(first_name, middle_name, last_name):
+    """
+    Return a swimmer's full name, omitting the middle name when there is none.
+    """
+    return f"{first_name} {middle_name + ' ' if middle_name else ''}{last_name}"
+
+
 def confirm(question):
     """
     Asks the user a yes/no question.  True means yes and False means no.
@@ -129,17 +136,23 @@ def select_from_list(items, label_fn, title):
         print("  Invalid choice, please try again.")
 
 
-def search_from_list(items, label_fn, title):
+def search_from_list(items, label_fn, title, current=None):
     """
     Display a filtered list of items containing letter(s) typed by the user.  Return
-    the item the user picks.  Returns None if the user cancels with 0."
+    the item the user picks.  Returns None if the user cancels with 0.  If a current
+    value is available, pressing Enter keeps it and returns it unchanged.
     """
     print(title)
+    if current is not None:
+        print(f"  Current: {label_fn(current)} - press Enter to keep")
     print("  0. Cancel")
     while True:
         search = input("Enter letters to search (or 0 to cancel): ").strip().lower()
         if search == "0":
             return None  # selection cancelled
+        if not search and current is not None:
+            print(f"  Kept: {label_fn(current)}")
+            return current
         filtered = [item for item in items if search in label_fn(item).lower()]
         if not filtered:
             print("No items containing those letter(s). Try again.")
@@ -364,7 +377,7 @@ def flow_add_swimmer():
     )
 
     # confirmation message
-    display_name = f"{first_name} {middle_name + ' ' if middle_name else ''}{last_name}"
+    display_name = full_name(first_name, middle_name, last_name)
     print(f"  Swimmer '{display_name}' successfully added!")
 
 
@@ -782,19 +795,19 @@ def flow_edit_club():
         print("  No clubs found.")
         return
     club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
-    if club is None:
+    if club is None:  # case where the user cancelled
         return
     print("  Press Enter to keep the current value shown in brackets.")
     name = prompt_keep("Club name", club["name"])
-    country_id = club["country_id"]
-    if confirm("Change country?"):
-        country = search_from_list(
-            db.list_countries(), lambda c: c["name"], "Select country"
-        )
-        if country is None:
-            print("  Edit cancelled. No changes made.")
-            return
-        country_id = country["id"]
+    countries = db.list_countries()
+    current_country = next(c for c in countries if c["id"] == club["country_id"])
+    country = search_from_list(
+        countries, lambda c: c["name"], "Select country", current_country
+    )
+    if country is None:
+        print("  Edit cancelled. No changes made.")
+        return
+    country_id = country["id"]
     if not confirm("Save these changes?"):
         print("  Edit cancelled. No changes made.")
         return
@@ -803,7 +816,62 @@ def flow_edit_club():
 
 
 def flow_edit_swimmer():
-    print("  Not yet implemented.")
+    """
+    Function for the user to edit a swimmer.
+    """
+    print("--- Edit Swimmer ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    swimmer = search_from_list(swimmers, lambda s: s["name"], "Select swimmer")
+    if swimmer is None:
+        return
+    print("  Press Enter to keep the current value shown in brackets.")
+    first_name = prompt_keep("First name", swimmer["first_name"])
+    middle_name = prompt_keep("Middle name", swimmer["middle_name"])
+    last_name = prompt_keep("Last name", swimmer["last_name"])
+    date_of_birth = prompt_keep_date("Date of birth", swimmer["date_of_birth"])
+    while True:
+        gender = prompt_keep("Gender (M or F)", swimmer["gender"])
+        if gender.upper() in ("M", "F"):
+            gender = gender.upper()
+            break
+        print("  Please enter M or F.")
+    clubs = db.list_clubs()
+    current_club = next(cl for cl in clubs if cl["id"] == swimmer["club_id"])
+    club = search_from_list(clubs, lambda cl: cl["name"], "Select club", current_club)
+    if club is None:
+        print("  Edit cancelled. No changes made.")
+        return
+    club_id = club["id"]
+    countries = db.list_countries()
+    current_country = next(c for c in countries if c["id"] == swimmer["country_id"])
+    country = search_from_list(
+        countries,
+        lambda c: c["name"],
+        "Select country (nationality)",
+        current_country,
+    )
+    if country is None:
+        print("  Edit cancelled. No changes made.")
+        return
+    country_id = country["id"]
+    if not confirm("Save these changes?"):
+        print("  Edit cancelled. No changes made.")
+        return
+    db.update_swimmer(
+        swimmer["id"],
+        first_name=first_name,
+        middle_name=middle_name,
+        last_name=last_name,
+        date_of_birth=date_of_birth,
+        gender=gender,
+        club_id=club_id,
+        country_id=country_id,
+    )
+    display_name = full_name(first_name, middle_name, last_name)
+    print(f"  Swimmer '{display_name}' successfully updated!")
 
 
 def flow_edit_meet():
@@ -826,15 +894,15 @@ def flow_edit_meet():
     date_end = prompt_keep_date("End date", meet["date_end"])
     location = prompt_keep("City / venue", meet["location"])
     notes = prompt_keep("Notes", meet["notes"])
-    country_id = meet["country_id"]
-    if confirm("Change country?"):
-        country = search_from_list(
-            db.list_countries(), lambda c: c["name"], "Select country"
-        )
-        if country is None:
-            print("  Edit cancelled. No changes made.")
-            return
-        country_id = country["id"]
+    countries = db.list_countries()
+    current_country = next(c for c in countries if c["id"] == meet["country_id"])
+    country = search_from_list(
+        countries, lambda c: c["name"], "Select country", current_country
+    )
+    if country is None:
+        print("  Edit cancelled. No changes made.")
+        return
+    country_id = country["id"]
     if not confirm("Save these changes?"):
         print("  Edit cancelled. No changes made.")
         return

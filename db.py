@@ -484,7 +484,9 @@ def list_swimmers():
         listing = conn.execute("""
             SELECT swimmers.id, swimmers.first_name || ' ' ||
             COALESCE(swimmers.middle_name || ' ', '') || swimmers.last_name AS name,
-            swimmers.date_of_birth, swimmers.gender, clubs.name AS club,
+            swimmers.first_name, swimmers.middle_name, swimmers.last_name,
+            swimmers.date_of_birth, swimmers.gender, swimmers.club_id,
+            swimmers.country_id, clubs.name AS club,
             countries.name AS nationality
             FROM swimmers
             JOIN clubs ON swimmers.club_id = clubs.id
