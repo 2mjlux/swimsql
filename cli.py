@@ -64,6 +64,22 @@ def prompt_keep_date(label, current):
         print("  Invalid date format. Please use YYYY-MM-DD (e.g. 2026-05-20).")
 
 
+def prompt_keep_time(label, current_cs):
+    """
+    Ask for a new time in MM:SS.cc format, showing the current one in brackets.
+    Returns the time in centiseconds, or the current value if the user presses Enter.
+    """
+    display = db.cs_to_time(current_cs)
+    while True:
+        value = input(f"{label} (MM:SS.cc) [{display}]: ").strip()
+        if not value:  # the user has pressed Enter
+            return current_cs
+        try:
+            return db.time_to_cs(value)
+        except ValueError as e:  # time entered by the user is not in the right format
+            print(f"  {e}")
+
+
 def prompt_date(label, optional=False):
     """
     Ask the user for a date in YYYY-MM-DD format.
@@ -72,7 +88,7 @@ def prompt_date(label, optional=False):
     while True:
         if optional:
             date = input(
-                f"{label} (YYYY-MM-DD, optional - press Enter to skip):"
+                f"{label} (YYYY-MM-DD, optional - press Enter to skip): "
             ).strip()
             if not date:
                 return None
@@ -91,7 +107,7 @@ def prompt_year(label, optional=False):
     """
     while True:
         if optional:
-            year = input(f"{label} (YYYY, optional - press Enter to skip):").strip()
+            year = input(f"{label} (YYYY, optional - press Enter to skip): ").strip()
             if not year:
                 return None
         else:
@@ -110,10 +126,16 @@ def full_name(first_name, middle_name, last_name):
 
 def confirm(question):
     """
-    Asks the user a yes/no question.  True means yes and False means no.
+    Ask the user a yes/no question.  True means yes and False means no.
+    Anything other than y, yes, n or no is rejected and the question repeated.
     """
-    answer = input(f"{question} (y/n): ")
-    return answer.lower() == "y"
+    while True:
+        answer = input(f"{question} (y/n): ").strip().lower()
+        if answer in ("y", "yes"):
+            return True
+        if answer in ("n", "no"):
+            return False
+        print("  Please enter y or n.")
 
 
 def select_from_list(items, label_fn, title):
@@ -271,6 +293,19 @@ def select_discipline_yards():
     individual = [d for d in ultimate if d["is_relay"] == 0]
     relay = [d for d in ultimate if d["is_relay"] == 1]
     return individual[0] if selection == "Individual" else relay[0]
+
+
+def discipline_label(row):
+    """
+    Return the discipline name, with leg information appended for relay legs.
+    """
+    label = row["discipline"]
+    if row["is_relay_leg"]:
+        leg = f"leg {row['leg_number']}"
+        if row["is_mixed_mf"]:
+            leg += ", mixed"
+        label = f"{label} ({leg})"
+    return label
 
 
 # Flow functions
@@ -597,7 +632,11 @@ def flow_list_performances():
         "Session",
         "Notes",
     ]
-    print(tabulate(rows, headers=headers, tablefmt="github"))
+    print(
+        tabulate(
+            rows, headers=headers, tablefmt="github", disable_numparse=[4]
+        )
+    )
 
 
 def flow_personal_bests():
@@ -673,7 +712,9 @@ def flow_personal_bests():
                     ]
                 )
     headers = ["Discipline", "Best Time", "Points", "Date", "Session", "Meet", "Notes"]
-    print(tabulate(rows, headers=headers, tablefmt="github"))
+    print(
+        tabulate(rows, headers=headers, tablefmt="github", disable_numparse=[1])
+    )
 
 
 def flow_list_swimmers():
@@ -919,7 +960,95 @@ def flow_edit_meet():
 
 
 def flow_edit_performance():
-    print("  Not yet implemented.")
+    """
+    Function for the user to edit a performance.
+    Swimmer and discipline are not editable: delete the performance and enter it
+    again instead.
+    """
+    print("--- Edit Performance ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    swimmer = search_from_list(swimmers, lambda s: s["name"], "Select swimmer")
+    if swimmer is None:
+        return
+    units = ["Metres", "Yards"]
+    unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
+    if unit is None:
+        return
+    if unit == "Metres":
+        performances = db.list_performances_metres(swimmer["id"])
+    else:
+        performances = db.list_performances_yards(swimmer["id"])
+    if not performances:
+        print("  No performances found for this swimmer.")
+        return
+    performance = search_from_list(
+        performances,
+        lambda p: (
+            f"{p['date']}  {discipline_label(p)}  "
+            f"{db.cs_to_time(p['time_cs'])}  {p['meet']}"
+        ),
+        "Select performance",
+    )
+    if performance is None:
+        return
+    print("  Press Enter to keep the current value shown in brackets.")
+    print("  To change swimmer or discipline, delete and re-enter instead.")
+    time_cs = prompt_keep_time("Time", performance["time_cs"])
+    date = prompt_keep_date("Date", performance["date"])
+    while True:
+        session = prompt_keep("Session (AM or PM)", performance["session"])
+        if session is None or session.upper() in ("AM", "PM"):
+            session = session.upper() if session else None
+            break
+        print("  Please enter AM or PM.")
+    while True:
+        point_str = prompt_keep("Points", performance["points"])
+        if point_str is None:
+            points = None
+            break
+        if str(point_str).isdigit():
+            points = int(point_str)
+            break
+        print("  Points must be a positive whole number (integer). Please try again.")
+    notes = prompt_keep("Notes", performance["notes"])
+    meets = db.list_meets()
+    current_meet = next(m for m in meets if m["id"] == performance["meet_id"])
+    meet = search_from_list(
+        meets,
+        lambda m: f"{m['date_start']} - {m['name']}",
+        "Select meet",
+        current_meet,
+    )
+    if meet is None:
+        print("  Edit cancelled. No changes made.")
+        return
+    if not confirm("Save these changes?"):
+        print("  Edit cancelled. No changes made.")
+        return
+    if unit == "Metres":
+        db.update_performance_metres(
+            performance["id"],
+            meet_id=meet["id"],
+            time_cs=time_cs,
+            date=date,
+            session=session,
+            points=points,
+            notes=notes,
+        )
+    else:
+        db.update_performance_yards(
+            performance["id"],
+            meet_id=meet["id"],
+            time_cs=time_cs,
+            date=date,
+            session=session,
+            points=points,
+            notes=notes,
+        )
+    print(f"  Performance {db.cs_to_time(time_cs)} successfully updated!")
 
 
 def flow_edit_menu():

@@ -579,12 +579,12 @@ def add_performance_yards(
 
 def list_performances_metres(swimmer_id=None, discipline_metres_id=None, year=None):
     """
-    List a swimmers' performances in a 25, 33 and 50 metres pool.  Possibility to
+    List a swimmer's performances in a 25, 33 and 50 metres pool.  Possibility to
     filter by swimmer, discipline and year.
     """
     with get_connection() as conn:
         query = """
-        SELECT performances_metres.id,
+        SELECT performances_metres.id, performances_metres.meet_id,
         swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_metres.name AS discipline, performances_metres.time_cs,
@@ -642,12 +642,12 @@ def list_all_performances_metres():
 
 def list_performances_yards(swimmer_id=None, discipline_yards_id=None, year=None):
     """
-    List a swimmers' performances in a 25 yards pool. Possibility to filter by
+    List a swimmer's performances in a 25 yards pool. Possibility to filter by
     swimmer, discipline and year.
     """
     with get_connection() as conn:
         query = """
-        SELECT performances_yards.id,
+        SELECT performances_yards.id, performances_yards.meet_id,
         swimmers.first_name || ' ' || COALESCE(swimmers.middle_name || ' ',
         '') || swimmers.last_name AS swimmer, meets.name AS meet, meets.date_start,
         disciplines_yards.name AS discipline, performances_yards.time_cs,
@@ -1123,19 +1123,20 @@ def update_swimmer(
 
 
 def update_performance_metres(
-    performance_metres_id, time_cs, date, session, points, notes
+    performance_metres_id, meet_id, time_cs, date, session, points, notes
 ):
     """
-    Update time, date, session, points and notes of a performance in a metres pool.
-    Swimmer, meet, discipline and relay details are not editable: changing them would
-    require re-running the full selection menus in cli.py, so a wrong entry is deleted
-    and re-entered instead.
+    Update meet, time, date, session, points and notes of a performance in a metres
+    pool.  Swimmer, discipline and relay details are not editable: changing them would
+    require re-running the full discipline cascade in cli.py, so a wrong entry is
+    deleted and re-entered instead.
     """
     with get_connection() as conn:
         conn.execute(
-            "UPDATE performances_metres SET time_cs = ?, date = ?, session = ?, "
-            "points = ?, notes = ? WHERE id = ?",
+            "UPDATE performances_metres SET meet_id = ?, time_cs = ?, date = ?, "
+            "session = ?, points = ?, notes = ? WHERE id = ?",
             (
+                meet_id,
                 time_cs,
                 date,
                 session,
@@ -1147,19 +1148,20 @@ def update_performance_metres(
 
 
 def update_performance_yards(
-    performance_yards_id, time_cs, date, session, points, notes
+    performance_yards_id, meet_id, time_cs, date, session, points, notes
 ):
     """
-    Update time, date, session, points and notes of a performance in a yards pool.
-    Swimmer, meet, discipline and relay details are not editable: changing them would
-    require re-running the full selection menus in cli.py, so a wrong entry is deleted
-    and re-entered instead.
+    Update meet, time, date, session, points and notes of a performance in a yards
+    pool.  Swimmer, discipline and relay details are not editable: changing them would
+    require re-running the full discipline cascade in cli.py, so a wrong entry is
+    deleted and re-entered instead.
     """
     with get_connection() as conn:
         conn.execute(
-            "UPDATE performances_yards SET time_cs = ?, date = ?, session = ?, "
-            "points = ?, notes = ? WHERE id = ?",
+            "UPDATE performances_yards SET meet_id = ?, time_cs = ?, date = ?, "
+            "session = ?, points = ?, notes = ? WHERE id = ?",
             (
+                meet_id,
                 time_cs,
                 date,
                 session,
