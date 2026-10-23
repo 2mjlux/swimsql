@@ -161,15 +161,19 @@ def select_from_list(items, label_fn, title):
 def search_from_list(items, label_fn, title, current=None):
     """
     Display a filtered list of items containing letter(s) typed by the user.  Return
-    the item the user picks.  Returns None if the user cancels with 0.  If a current
-    value is available, pressing Enter keeps it and returns it unchanged.
+    the item the user picks.  Returns None if the user cancels with 0.  Pressing Enter
+    lists all items, or, if a current value is available, keeps it and returns it
+    unchanged.
     """
     print(title)
     if current is not None:
-        print(f"  Current: {label_fn(current)} - press Enter to keep")
+        print(f"  Current: {label_fn(current)}")
+        prompt = "Type letters to search, press Enter to keep, or 0 to cancel: "
+    else:
+        prompt = "Type letters to search, press Enter to list all, or 0 to cancel: "
     print("  0. Cancel")
     while True:
-        search = input("Enter letters to search (or 0 to cancel): ").strip().lower()
+        search = input(prompt).strip().lower()
         if search == "0":
             return None  # selection cancelled
         if not search and current is not None:
@@ -177,7 +181,7 @@ def search_from_list(items, label_fn, title, current=None):
             return current
         filtered = [item for item in items if search in label_fn(item).lower()]
         if not filtered:
-            print("No items containing those letter(s). Try again.")
+            print("  No items containing those letter(s). Try again.")
         elif len(filtered) == 1:
             print(f"  Selected: {label_fn(filtered[0])}")
             return filtered[0]
@@ -831,6 +835,7 @@ def flow_edit_club():
         return
     club = search_from_list(clubs, lambda cl: cl["name"], "Select club")
     if club is None:  # case where the user cancelled
+        print("  Cancelled. No changes made.")
         return
     print("  Press Enter to keep the current value shown in brackets.")
     name = prompt_keep("Club name", club["name"])
@@ -840,11 +845,11 @@ def flow_edit_club():
         countries, lambda c: c["name"], "Select country", current_country
     )
     if country is None:
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     country_id = country["id"]
     if not confirm("Save these changes?"):
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     db.update_club(club["id"], name, country_id)
     print(f"  Club '{name}' successfully updated!")
@@ -861,6 +866,7 @@ def flow_edit_swimmer():
         return
     swimmer = search_from_list(swimmers, lambda s: s["name"], "Select swimmer")
     if swimmer is None:
+        print("  Cancelled. No changes made.")
         return
     print("  Press Enter to keep the current value shown in brackets.")
     first_name = prompt_keep("First name", swimmer["first_name"])
@@ -877,7 +883,7 @@ def flow_edit_swimmer():
     current_club = next(cl for cl in clubs if cl["id"] == swimmer["club_id"])
     club = search_from_list(clubs, lambda cl: cl["name"], "Select club", current_club)
     if club is None:
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     club_id = club["id"]
     countries = db.list_countries()
@@ -889,11 +895,11 @@ def flow_edit_swimmer():
         current_country,
     )
     if country is None:
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     country_id = country["id"]
     if not confirm("Save these changes?"):
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     db.update_swimmer(
         swimmer["id"],
@@ -922,6 +928,7 @@ def flow_edit_meet():
         meets, lambda m: f"{m['date_start']} - {m['name']}", "Select meet"
     )
     if meet is None:
+        print("  Cancelled. No changes made.")
         return
     print("  Press Enter to keep the current value shown in brackets.")
     name = prompt_keep("Name", meet["name"])
@@ -935,11 +942,11 @@ def flow_edit_meet():
         countries, lambda c: c["name"], "Select country", current_country
     )
     if country is None:
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     country_id = country["id"]
     if not confirm("Save these changes?"):
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     db.update_meet(
         meet["id"],
@@ -966,10 +973,12 @@ def flow_edit_performance():
         return
     swimmer = search_from_list(swimmers, lambda s: s["name"], "Select swimmer")
     if swimmer is None:
+        print("  Cancelled. No changes made.")
         return
     units = ["Metres", "Yards"]
     unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
     if unit is None:
+        print("  Cancelled. No changes made.")
         return
     if unit == "Metres":
         performances = db.list_performances_metres(swimmer["id"])
@@ -987,6 +996,7 @@ def flow_edit_performance():
         "Select performance",
     )
     if performance is None:
+        print("  Cancelled. No changes made.")
         return
     print("  Press Enter to keep the current value shown in brackets.")
     print("  To change swimmer or discipline, delete and re-enter instead.")
@@ -1017,10 +1027,10 @@ def flow_edit_performance():
         current_meet,
     )
     if meet is None:
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     if not confirm("Save these changes?"):
-        print("  Edit cancelled. No changes made.")
+        print("  Cancelled. No changes made.")
         return
     if unit == "Metres":
         db.update_performance_metres(
