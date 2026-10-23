@@ -423,8 +423,7 @@ def list_meets():
     first).
     """
     with get_connection() as conn:
-        listing = conn.execute(
-            """
+        listing = conn.execute("""
                 SELECT
                     meets.id, meets.name, meets.date_start, meets.date_end,
                     meets.location, meets.country_id, meets.notes,
@@ -432,8 +431,7 @@ def list_meets():
                 FROM meets
                 JOIN countries ON meets.country_id = countries.id
                 ORDER BY date_start DESC
-            """
-        ).fetchall()
+            """).fetchall()
         return listing
 
 
@@ -1048,7 +1046,7 @@ def delete_meet(meet_id):
     if count > 0:
         raise ValueError(
             f"Cannot delete this meet: {count} performance(s) are linked. "
-            "Delete those performances first."
+            "Delete or reassign those performances first."
         )
     with get_connection() as conn:
         conn.execute("DELETE FROM meets WHERE id = ?", (meet_id,))

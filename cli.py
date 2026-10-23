@@ -632,11 +632,7 @@ def flow_list_performances():
         "Session",
         "Notes",
     ]
-    print(
-        tabulate(
-            rows, headers=headers, tablefmt="github", disable_numparse=[4]
-        )
-    )
+    print(tabulate(rows, headers=headers, tablefmt="github", disable_numparse=[4]))
 
 
 def flow_personal_bests():
@@ -712,9 +708,7 @@ def flow_personal_bests():
                     ]
                 )
     headers = ["Discipline", "Best Time", "Points", "Date", "Session", "Meet", "Notes"]
-    print(
-        tabulate(rows, headers=headers, tablefmt="github", disable_numparse=[1])
-    )
+    print(tabulate(rows, headers=headers, tablefmt="github", disable_numparse=[1]))
 
 
 def flow_list_swimmers():
@@ -1082,15 +1076,112 @@ def flow_edit_menu():
 
 
 def flow_delete_club():
-    print("  Not yet implemented.")
+    """
+    Function for the user to delete a club.
+    A club with members cannot be deleted.
+    """
+    print("--- Delete Club ---")
+    clubs = db.list_clubs()
+    if not clubs:
+        print("  No clubs found.")
+        return
+    club = search_from_list(
+        clubs,
+        lambda cl: f"{cl['name']} ({cl['country']})",
+        "Select club",
+    )
+    if club is None:
+        print("  Cancelled. No club deleted.")
+        return
+    members = db.count_swimmers_for_club(club["id"])
+    if members > 0:
+        print(f"  Cannot delete this club: {members} swimmer(s) are members.")
+        print("  Delete or reassign those swimmers first.")
+        return
+    if not confirm("Delete this club? This cannot be undone."):
+        print("  Cancelled. No club deleted.")
+        return
+    try:
+        db.delete_club(club["id"])
+    except ValueError as e:
+        print(f"  {e}")
+        return
+    print(f"  Club {club['name']} ({club['country']}) successfully deleted!")
 
 
 def flow_delete_swimmer():
-    print("  Not yet implemented.")
+    """
+    Function for the user to delete a swimmer.
+    A swimmer with performances cannot be deleted.
+    """
+    print("--- Delete Swimmer ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    swimmer = search_from_list(
+        swimmers,
+        lambda s: f"{s['name']} (born {s['date_of_birth']}, {s['nationality']})",
+        "Select swimmer",
+    )
+    if swimmer is None:
+        print("  Cancelled. No swimmer deleted.")
+        return
+    performances = db.count_performances_for_swimmer(swimmer["id"])
+    if performances > 0:
+        print(
+            f"  Cannot delete this swimmer: {performances} performance(s) are linked."
+        )
+        print("  Delete those performances first.")
+        return
+    print(
+        f"  {swimmer['name']} ({swimmer['gender']}, born "
+        f"{swimmer['date_of_birth']}, {swimmer['nationality']}, "
+        f"{swimmer['club']})"
+    )
+    if not confirm("Delete this swimmer? This cannot be undone."):
+        print("  Cancelled. No swimmer deleted.")
+        return
+    try:
+        db.delete_swimmer(swimmer["id"])
+    except ValueError as e:
+        print(f"  {e}")
+        return
+    print(f"  {swimmer['name']} successfully deleted!")
 
 
 def flow_delete_meet():
-    print("  Not yet implemented.")
+    """
+    Function for the user to delete a meet.
+    A meet with performances cannot be deleted.
+    """
+    print("--- Delete Meet ---")
+    meets = db.list_meets()
+    if not meets:
+        print("  No meets found.")
+        return
+    meet = search_from_list(
+        meets,
+        lambda m: f"{m['date_start']} - {m['name']}",
+        "Select meet",
+    )
+    if meet is None:
+        print("  Cancelled. No meet deleted.")
+        return
+    performances = db.count_performances_for_meet(meet["id"])
+    if performances > 0:
+        print(f"  Cannot delete this meet: {performances} performance(s) are linked.")
+        print("  Delete or reassign those performances first.")
+        return
+    if not confirm("Delete this meet? This cannot be undone."):
+        print("  Cancelled. No meet deleted.")
+        return
+    try:
+        db.delete_meet(meet["id"])
+    except ValueError as e:
+        print(f"  {e}")
+        return
+    print(f"  Meet {meet['date_start']} - {meet['name']} successfully deleted!")
 
 
 def flow_delete_performance():
