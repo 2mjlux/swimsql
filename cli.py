@@ -1147,7 +1147,7 @@ def flow_delete_swimmer():
     except ValueError as e:
         print(f"  {e}")
         return
-    print(f"  {swimmer['name']} successfully deleted!")
+    print(f"  Swimmer {swimmer['name']} successfully deleted!")
 
 
 def flow_delete_meet():
@@ -1185,7 +1185,53 @@ def flow_delete_meet():
 
 
 def flow_delete_performance():
-    print("  Not yet implemented.")
+    """
+    Function for the user to delete a performance.
+    """
+    print("--- Delete Performance ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found.")
+        return
+    swimmer = search_from_list(swimmers, lambda s: s["name"], "Select swimmer")
+    if swimmer is None:
+        print("  Cancelled. No performance deleted.")
+        return
+    units = ["Metres", "Yards"]
+    unit = select_from_list(units, lambda u: u, "Select Metres or Yards")
+    if unit is None:
+        print("  Cancelled. No performance deleted.")
+        return
+    if unit == "Metres":
+        performances = db.list_performances_metres(swimmer["id"])
+    else:
+        performances = db.list_performances_yards(swimmer["id"])
+    if not performances:
+        print("  No performances found for this swimmer.")
+        return
+    performance = search_from_list(
+        performances,
+        lambda p: (
+            f"{p['date']}  {discipline_label(p)}  "
+            f"{db.cs_to_time(p['time_cs'])}  {p['meet']}"
+        ),
+        "Select performance",
+    )
+    if performance is None:
+        print("  Cancelled. No performance deleted.")
+        return
+    print(f"  Swimmer: {swimmer['name']}")
+    if not confirm("Delete this performance? This cannot be undone."):
+        print("  Cancelled. No performance deleted.")
+        return
+    if unit == "Metres":
+        db.delete_performance_metres(performance["id"])
+    else:
+        db.delete_performance_yards(performance["id"])
+    print(
+        f"  Performance {discipline_label(performance)} "
+        f"{db.cs_to_time(performance['time_cs'])} successfully deleted!"
+    )
 
 
 def flow_delete_menu():
