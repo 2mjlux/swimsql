@@ -8,24 +8,27 @@ import os
 import db
 import cli
 
-WELCOME = """
-Welcome to SwimSQL v1.0.0!
+VERSION = "1.1.0"
 
-SwimSQL is a free and open-source tool for athletes and parents to build their own
-database of competition swimming performances.
+WELCOME = f"""
+Welcome to SwimSQL v{VERSION}!
 
-You own your database, which is saved on your computer at: ~/.swimsql/swimsql.db
+SwimSQL is an open-source tool for athletes and parents to build their own database of
+competition swimming performances.
+
+You own your database, which is saved on your computer at:
+{db.DB_PATH}
 
 If you wish, you can export your data to a spreadsheet (LibreOffice, Collabora,
 OpenOffice, or Microsoft Excel).
 
 SwimSQL is menu-driven and easy to use:
-- Type the number of your menu choice
+- Type the number or letter of your menu choice
 - Respond to prompts with your keyboard
 - No mouse required
 
-Note: v1.0.0 does not yet support editing or deleting entries. If you make an erroneous
-entry, leave it and add a correct one. Editing features are planned for v1.1.0.
+You can edit or delete entries when needed. Note that SwimSQL will not delete a club,
+swimmer or meet that other entries still depend on.
 
 Happy swimming!
 
@@ -37,8 +40,8 @@ Licensed under the Mozilla Public License 2.0
 Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
 """
 
-MENU = """
-=== SwimSQL v.1.0.0 ===
+MENU = f"""
+=== SwimSQL v{VERSION} ===
   1. Add club
   2. Add swimmer
   3. Add meet
@@ -55,8 +58,8 @@ MENU = """
 
 def main():
     os.system("clear")
-    if "dev" in str(db.DB_PATH):
-        print(f" *** DEVELOPMENT DATABASE: {db.DB_PATH} ***\n")
+    if "dev" in db.DB_PATH.name:
+        print(f"  *** DEVELOPMENT DATABASE: {db.DB_PATH} ***\n")
     db.init_db()
     print(WELCOME)
     input("  Press Enter to continue...")
