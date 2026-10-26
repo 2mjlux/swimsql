@@ -446,8 +446,16 @@ def flow_add_performance():
     Function for the user to add a swimmer's performance.
     """
     print("--- Add Performance ---")
+    swimmers = db.list_swimmers()
+    if not swimmers:
+        print("  No swimmers found. Add a swimmer first.")
+        return
+    meets = db.list_meets()
+    if not meets:
+        print("  No meets found. Add a meet first.")
+        return
     swimmer = search_from_list(
-        db.list_swimmers(), lambda s: s["name"], "Select swimmer"
+        swimmers, lambda s: s["name"], "Select swimmer"
     )
     if swimmer is None:
         print("  Cancelled. No performance added.")
@@ -496,13 +504,14 @@ def flow_add_performance():
             is_mixed_mf = 1 if confirm("Is this a mixed gender relay?") else 0
 
     meet = search_from_list(
-        db.list_meets(), lambda m: f"{m['date_start']} - {m['name']}", "Select Meet"
+        meets, lambda m: f"{m['date_start']} - {m['name']}", "Select meet"
     )
     if meet is None:
         print("  Cancelled. No performance added.")
         return
     meet_id = meet["id"]
-    date = prompt_date("Date of performance")
+    print("  Type a date, or press Enter to accept the meet's start date in brackets.")
+    date = prompt_keep_date("Date of performance", meet["date_start"])
     session = None
     if confirm("Add session (AM/PM)?"):
         sessions = ["AM", "PM"]
@@ -524,9 +533,7 @@ def flow_add_performance():
             print(f"  {e}")
     points = None
     while True:
-        point_str = prompt(
-            "Points (optional, as published on result sheet)", optional=True
-        )
+        point_str = prompt("Points (as published on result sheet)", optional=True)
         if point_str is None:
             break
         if point_str.isdigit():

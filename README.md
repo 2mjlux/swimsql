@@ -1,13 +1,13 @@
 # SwimSQL
 
-> SwimSQL v1.0.0 is released. 44 automated tests, 98% code coverage.
+> SwimSQL v1.1.0 is released: editing and deleting are now supported. 61 automated tests, 100% code coverage of the database layer.
 
 A command-line tool for tracking swimming competition performances, built with Python and SQLite.
 
 
 ## What it does
 
-SwimSQL lets you record and consult a swimmer's competition results from the terminal. No internet connection, no account, no server - just a local database on your machine.
+SwimSQL lets you record and consult a swimmer's competition results from the terminal. No internet connection, no account, no server - just a local database on your machine. Multiple swimmers can be recorded in the database.
 
 **Features:**
 - Record meets and performances by discipline
@@ -15,9 +15,11 @@ SwimSQL lets you record and consult a swimmer's competition results from the ter
 - Optionally record points associated with the performance
 - Filter results by discipline and year
 - View personal bests across all individual disciplines
+- Edit clubs, swimmers, meets and performances
+- Delete clubs, swimmers, meets and performances, with safeguards against orphaned data
 - Export results to ODS or XLSX for sharing
 
-Disciplines are pre-loaded at first run and cover all standard individual events (Freestyle, Backstroke, Breaststroke, Butterfly, Medley) in 25, 50, and 33 metre pools and the 25 yard pool, plus relay events.
+Disciplines are pre-loaded at first run and cover all standard individual events (Butterfly, Backstroke, Breaststroke, Freestyle, Medley) in 25, 50, and 33 metre pools and the 25 yard pool, plus relay events.
 
 
 ## Architecture
@@ -26,7 +28,7 @@ SwimSQL follows a strict separation of responsibilities across its modules:
 
 | Module | Responsibility |
 |---|---|
-| `db.py` | All database interaction: SQL queries, inserts, schema creation, seeding |
+| `db.py` | All database interaction: SQL queries, inserts, updates, deletes, schema creation, seeding |
 | `cli.py` | All user interaction: menus, prompts, input validation |
 | `export.py` | Export of results to ODS and XLSX formats |
 | `swimsql.py` | Entry point: launches the application |
@@ -44,30 +46,14 @@ swimsql.py
                          └── swimsql.ods / swimsql.xlsx
 ```
 
-### cli.py in detail
+### cli.py in a nutshell
 
-`cli.py` contains three types of functions:
+`cli.py` contains two types of functions:
 
-**Helper functions** - reusable building blocks:
-- `prompt()` - ask the user for a single input
-- `prompt_date()` - ask the user for a date in YYYY-MM-DD format
-- `prompt_year()` - ask the user for a year in YYYY format
-- `select_from_list()` - show a numbered list, return the chosen item
-- `search_from_list()` - search a long list by typing first letters
-- `confirm()` - ask a yes/no question
-- `select_discipline_metres()` - guided sub-menu for picking a metres discipline
-- `select_discipline_yards()` - guided sub-menu for picking a yards discipline
+- **Helper functions**, which are reusable building blocks
+- **Flow functions**, one per menu option
 
-**Flow functions** - one per menu option:
-- `flow_add_meet()` - prompts for meet details, calls `add_meet()` from `db.py`
-- `flow_add_swimmer()` - prompts for swimmer details, calls `add_swimmer()` from `db.py`
-- `flow_add_club()` - prompts for club details, calls `add_club()` from `db.py`
-- `flow_add_performance()` - prompts for performance, calls `add_performance_metres()` or `add_performance_yards()` from `db.py`
-- `flow_list_performances()` - asks for filters, displays results via tabulate
-- `flow_personal_bests()` - asks for optional discipline filter, displays personal bests via tabulate
-- `flow_export()` - generates ODS/XLSX file via `export.py`
-
-**Main menu** - the `main()` function that ties everything together.
+The `main()` function in `swimsql.py` ties everything together.
 
 ### Key principle
 
@@ -77,8 +63,21 @@ They communicate in one direction:
 cli.py collects input --> calls db.py functions --> db.py returns data --> cli.py displays it
 ```
 
+### Deletion safeguards
 
-### export.py in detail
+Deletion is permanent, so `db.py` refuses any deletion that would leave other entries pointing at nothing:
+
+| Deleting a... | Refused while... |
+|---|---|
+| club | swimmers are members of it |
+| swimmer | performances are linked to them |
+| meet | performances are linked to it |
+| performance | never refused - nothing depends on a performance |
+
+`cli.py` checks the same condition before asking for confirmation, so the user is never asked to confirm a deletion that cannot happen. The check in `db.py` remains as a safety net.
+
+
+### export.py in a nutshell
 
 `export.py` generates a complete snapshot of the database in ODS or XLSX
 format. The export contains four sheets:
@@ -110,8 +109,6 @@ SwimSQL uses a local SQLite database with the following structure:
 | `meets` | Competitions (name, start and end date, location, country) |
 | `performances_metres` | Metre-based results linking swimmer, discipline, meet, date, session, time and optional relay leg details |
 | `performances_yards` | Yard-based results linking swimmer, discipline, meet, date, session, time and optional relay leg details |
-| `relay_legs_metres` | Individual leg times within a metre-based relay (v2, not yet implemented) |
-| `relay_legs_yards` | Individual leg times within a yard-based relay (v2, not yet implemented) |
 
 ### Notes
 
@@ -126,11 +123,6 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
           disciplines_yards  <-- performances_yards  --> meets --> countries
                                         |
                       countries <-- swimmers --> clubs --> countries
-                                        |
-                             +----------+----------+
-                             |                     |
-                    relay_legs_metres       relay_legs_yards
-                          (commented out - planned v2)
 ```
 
 ### Relationships (prose)
@@ -142,8 +134,6 @@ pools <-- disciplines_metres <-- performances_metres --> meets --> countries
 - `performances_metres` link a `swimmer`, `discipline_metres`, and `meet`
 - `performances_yards` link a `swimmer`, `discipline_yards`, and `meet`
 - `meets` take place in a `country`
-- `relay_legs_metres` link individual leg times to a `performances_metres` team result and a `swimmer` (v2, not yet implemented)
-- `relay_legs_yards` link individual leg times to a `performances_yards` team result and a `swimmer` (v2, not yet implemented)
 
 ### Relay leg fields in performances tables
 
@@ -155,19 +145,23 @@ fields are populated in `performances_metres` or `performances_yards`:
 - `is_mixed_mf` - 1 if mixed gender relay. Leg 1 of a non-mixed relay may count as an individual record. Leg 1 of a mixed relay cannot count for records under European Aquatics rules. Source: https://europeanaquatics.org/wp-content/uploads/2025/10/GENERAL-EVENT-RULES-sept-2025.pdf
 
 
-## Known limitations and planned features
+## Known limitations
 
-### Version 1.0.0
-SwimSQL v1.0.0 supports creating and reading data (CRUD: Create and Read).
+SwimSQL v1.1.0 supports the full set of create, read, update and delete operations (CRUD) for clubs, swimmers, meets and performances, with the following limitations:
 
-**Update and Delete (v1.1.0)**
-- Edit a swimmer's club, country, or name
-- Edit a meet's name, dates, or location
-- Edit a performance's time, date, session, or notes
-- Delete a swimmer, meet, club, or performance
+**Editing**
+- A performance's swimmer and discipline cannot be edited. To correct either, delete the performance and enter it again.
+- An optional field (middle name, notes, session, end date, location) cannot be cleared once it has a value; pressing Enter keeps the current value.
 
-**Relay team breakdown (v2)**
-- Complete relay team breakdown (recording all four swimmers' leg times linked to one team result) is designed but deferred to v2. Individual relay leg times can be recorded via the performances tables.
+**Input**
+- Text prompts (names, dates, times) cannot be cancelled with `0`; only list selections can.
+- Dates are checked for format (YYYY-MM-DD) only, so an impossible date such as `2026-02-30` is accepted. A performance's date is not checked against its meet's dates.
+- Adding a swimmer with the same name and date of birth as an existing one gives no warning.
+
+**Relays**
+- Men's, women's and mixed relays share one discipline per relay event, although they are separate events under World Aquatics rules. Whether a relay was mixed is recorded on each performance instead.
+- Relay discipline names do not include the pool size.
+- Relay legs are recorded as individual performances and cannot be linked together into a single team result.
 
 
 ## Testing
@@ -178,7 +172,12 @@ SwimSQL uses pytest for automated testing of the database layer (`db.py`), which
 
 - **Time conversion** - `cs_to_time()` and `time_to_cs()` including edge cases (zero, invalid format, invalid centiseconds, None input)
 - **Database seeding** - pools, countries, metres and yards disciplines
-- **CRUD operations** - meets, clubs, swimmers, performances (metres and yards)
+- **Repeated initialisation** - running `init_db()` on an existing database adds nothing, as happens on every launch after the first
+- **Create and read** - meets, clubs, swimmers, performances (metres and yards)
+- **Update** - every editable field of clubs, swimmers, meets and performances changed and read back, including empty fields given a value and performances moved to a different meet
+- **Delete** - each entry type removed; performance deletion tested with two rows to prove only the selected one is removed
+- **Deletion safeguards** - deleting a club with members, a swimmer with performances, or a meet with performances raises an error **and** leaves the entry in place
+- **Dependency counts** - counts combine metres and yards performances, and are filtered to the requested club, swimmer or meet
 - **Personal bests** - correct fastest time returned across multiple meets, including duplicate times at different meets
 - **Filters** - discipline filter and year filter for list functions
 - **Relay fields** - `is_relay_leg`, `leg_number`, `is_mixed_mf` stored correctly
@@ -187,11 +186,13 @@ SwimSQL uses pytest for automated testing of the database layer (`db.py`), which
 - **Data integrity** - foreign key constraints enforced
 - **Relay exclusion** - relay disciplines do not appear in personal bests
 
+Each test runs against its own temporary database, so tests never touch real data and cannot affect one another.
+
 ### Coverage
 
-44 automated tests covering 98% of `db.py` statements. The remaining 2% are seeding guard clauses (early returns when data is already seeded) that only execute when the database is pre-populated - not reachable from a fresh temporary test database.
+61 automated tests covering 100% of `db.py` statements.
 
-`cli.py` and `export.py` were verified through manual end-to-end testing of the main menu options before release. Metres performances, personal bests and both export formats were fully tested. Yards performances follow the same code path and are covered by the automated test suite.
+`cli.py` and `export.py` are verified through manual end-to-end testing. For v1.1.0, the edit and delete flows were tested path by path: every cancellation point, every deletion refusal, and successful edits and deletions in both metres and yards.
 
 ### Running tests
 
@@ -202,15 +203,20 @@ pytest --cov=db --cov-report=term-missing     # with coverage report
 ```
 
 
+## Code style
+
+Code is flake8 compliant with a line length of 88 (set in `setup.cfg`).
+
+
 ## Development database
 
-When developing features that modify or delete data, point `DB_PATH` in `db.py` at a separate database so test runs cannot touch real data:
+When developing features that modify or delete data, point `DB_PATH` in `db.py` at a separate database so manual testing cannot touch real data:
 
 ```python
 DB_PATH = Path.home() / ".swimsql" / "swimsql-dev.db"
 ```
 
-`main()` in `swimsql.py` prints a warning at startup whenever the path contains "dev", so you always know which database you are using. **Revert the path before merging.**
+`main()` in `swimsql.py` prints a warning at startup whenever the database filename contains "dev", so you always know which database you are using. **Revert the path before merging.**
 
 
 ## Requirements
@@ -264,7 +270,7 @@ python swimsql.py
 You will be presented with a welcome screen followed by the main menu:
 
 ```
-=== SwimSQL v1.0.0 ===
+=== SwimSQL v1.1.0 ===
   1. Add club
   2. Add swimmer
   3. Add meet
@@ -272,19 +278,11 @@ You will be presented with a welcome screen followed by the main menu:
   5. List performances
   6. Personal bests
   7. Export
+  8. Edit
+  9. Delete
+  L. Lists
   0. Quit
 ```
-
-Type the number of your choice and follow the prompts.
-
-### Points
-
-`performances_metres` and `performances_yards` include an optional `points` field:
-- For metre-based performances in 25m and 50m pools: World Aquatics points
-- For yard-based performances: USA Swimming Power Points
-- For 33m pool performances: no official points system exists, leave blank
-
-Enter points as published on the official result sheet.
 
 
 ### Recording relays
@@ -307,15 +305,15 @@ Personal bests cover individual disciplines only. Relay disciplines are excluded
 
 ### Data storage and backup
 
-SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run.
+SwimSQL stores its database at `~/.swimsql/swimsql.db`. This folder is created automatically on first run, and the welcome screen shows the exact path on your computer.
 
-All your data lives in that single file. To back it up:
+All your data lives in that single file. The bash command to back up your database is as follows:
 
 ```bash
 cp ~/.swimsql/swimsql.db ~/.swimsql/$(date +%Y%m%d)-swimsql-backup.db
 ```
 
-This creates a dated copy, e.g. `20260903-swimsql-backup.db`. Back up after each data entry session, and keep a copy outside your home directory (external drive, cloud storage).
+This creates a dated copy, e.g. `20260903-swimsql-backup.db`. Back up after each data entry session, and always before deleting entries. Keep a copy outside your home directory (external drive, cloud storage).
 
 To restore a backup, close SwimSQL and copy it back:
 
