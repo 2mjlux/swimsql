@@ -1,7 +1,6 @@
-# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-# If a copy of the MPL was not distributed with this file, You can obtain one at
-# http://mozilla.org/MPL/2.0/.
 # Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
+# Licensed under the PolyForm Strict License 1.0.0.
+# See the LICENSE file or https://polyformproject.org/licenses/strict/1.0.0
 
 import sqlite3
 import pycountry
