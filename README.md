@@ -326,7 +326,7 @@ To migrate to a new machine, copy the database file to the same path there.
 
 ## Issues
 
-The issues are the author’s own work list. Creating issues and pull requests, and commenting, is limited to collaborators.
+The issues are the author’s own work list. Creating issues and pull requests, and commenting, are limited to collaborators.
 
 
 ## License
