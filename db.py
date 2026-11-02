@@ -6,9 +6,9 @@ import sqlite3
 import pycountry
 from pathlib import Path
 
-DB_PATH = Path.home() / ".swimsql" / "swimsql.db"  # module-level constant
+# DB_PATH = Path.home() / ".swimsql" / "swimsql.db"  # module-level constant
 
-# DB_PATH = Path.home() / ".swimsql" / "swimsql-dev.db"  # development database
+DB_PATH = Path.home() / ".swimsql" / "swimsql-dev.db"  # development database
 
 
 # Setup
