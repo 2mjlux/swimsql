@@ -324,6 +324,11 @@ cp ~/.swimsql/20260903-swimsql-backup.db ~/.swimsql/swimsql.db
 To migrate to a new machine, copy the database file to the same path there.
 
 
+## Issues
+
+The issues are the author’s own work list. Creating issues and pull requests, and commenting, is limited to collaborators.
+
+
 ## License
 
 The SwimSQL project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
