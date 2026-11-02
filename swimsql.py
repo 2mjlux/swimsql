@@ -7,13 +7,13 @@ import os
 import db
 import cli
 
-VERSION = "1.1.0"
+VERSION = "1.2.0-dev"
 
 WELCOME = f"""
 Welcome to SwimSQL v{VERSION}!
 
-SwimSQL is an open-source tool for athletes and parents to build their own database of
-competition swimming performances.
+SwimSQL is a tool for athletes and parents to build their own database of
+competition swimming performances.  The underlying code of SwimSQL is source-available.
 
 You own your database, which is saved on your computer at:
 {db.DB_PATH}
@@ -35,9 +35,8 @@ Michael
 developer-swimmer-parent
 
 
-# Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
-# Licensed under the PolyForm Strict License 1.0.0.
-# See the LICENSE file or https://polyformproject.org/licenses/strict/1.0.0
+Licensed under the PolyForm Strict License 1.0.0
+Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
 """
 
 MENU = f"""
