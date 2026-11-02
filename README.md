@@ -331,8 +331,10 @@ The issues are the author’s own work list. Creating issues and pull requests, 
 
 ## License
 
-The SwimSQL project is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+SwimSQL is licensed under the [PolyForm Strict License 1.0.0](https://polyformproject.org/licenses/strict/1.0.0). The full text is in the [LICENSE](LICENSE) file.
 
-You are free to use, modify, and distribute this software, provided that any modifications to the original files are released under the same licence.
+In short: you may read the source code and use SwimSQL for any noncommercial purpose, such as personal use or use by a charitable organisation. You may not make changes or new works based on it, and you may not distribute it, whether free or paid. This summary is for convenience only; the licence text is what counts.
+
+Versions up to and including 1.1.0 were released under the Mozilla Public License 2.0 (MPL 2.0). From 1.2.0, SwimSQL is licensed under the PolyForm Strict License 1.0.0.
 
 Copyright (c) 2026 Michael JJ Martin (https://github.com/2mjlux)
